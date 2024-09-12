@@ -128,54 +128,62 @@
 
 
     // Função para atualizar a tarefa conforme o input
-    // Função para atualizar a tarefa conforme o input
     function updateTask(index, field, value) {
       const oldValue = tasks[index][field]; // Valor antigo para comparação
-      const taskIds = tasks.map(task => task.id); // Lista de todos os IDs de tarefas
 
-      // Verifica se o campo alterado é o campo de dependências
-      if (field === 'dependencies') {
-        // Se o valor for vazio, o usuário quer remover as dependências, então permitimos isso
-        if (value.trim() === '') {
-          tasks[index][field] = value;
-        } else {
-          // Separar múltiplas dependências
-          const dependencies = value.split(',').map(dep => dep.trim());
+      // Se o campo alterado for a data de fim, verificar e ajustar as dependências
+      if (field === 'end') {
+        tasks[index][field] = value;
 
-          // Verificar se todas as dependências existem na lista de tarefas
-          const invalidDependencies = dependencies.filter(dep => !taskIds.includes(dep));
+        // Ajustar as tarefas dependentes se a data de fim for alterada
+        adjustDependentTasks(index);
+      } else if (field === 'id' && value !== oldValue) {
+        const oldId = oldValue;
+        tasks[index][field] = value;
 
-          // Se houver dependências inválidas, alertar o usuário e reverter a mudança
-          if (invalidDependencies.length > 0) {
-            alert(`As seguintes dependências não existem: ${invalidDependencies.join(', ')}`);
-            tasks[index][field] = oldValue; // Reverter para o valor antigo
-          } else {
-            tasks[index][field] = value; // Atualiza se todas as dependências forem válidas
+        // Varrer todas as outras tarefas para renomear dependências
+        tasks.forEach((task) => {
+          if (task.dependencies) {
+            const dependencies = task.dependencies.split(',');
+            const updatedDependencies = dependencies.map(dep => dep.trim() === oldId ? value : dep.trim());
+            task.dependencies = updatedDependencies.join(', ');
           }
-        }
+        });
       } else {
-        // Atualizar ID e recalcular dependências, conforme o comportamento anterior
-        if (field === 'id' && value !== oldValue) {
-          const oldId = oldValue;
-          tasks[index][field] = value;
-
-          // Varrer todas as outras tarefas para renomear dependências
-          tasks.forEach((task) => {
-            if (task.dependencies) {
-              const dependencies = task.dependencies.split(',');
-              const updatedDependencies = dependencies.map(dep => dep.trim() === oldId ? value : dep.trim());
-              task.dependencies = updatedDependencies.join(', ');
-            }
-          });
-        } else {
-          // Se for outro campo (não dependências ou ID), apenas atualiza
-          tasks[index][field] = value;
-        }
+        // Atualiza qualquer outro campo
+        tasks[index][field] = value;
       }
 
       // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
+    }
+
+    // Função para ajustar a data das tarefas dependentes de forma recursiva
+    function adjustDependentTasks(taskIndex) {
+      const task = tasks[taskIndex];
+      const taskEndDate = new Date(task.end);
+
+      tasks.forEach((dependentTask, index) => {
+        if (dependentTask.dependencies && dependentTask.dependencies.includes(task.id)) {
+          const dependentTaskStartDate = new Date(dependentTask.start);
+
+          // Se a data de início da tarefa dependente for menor ou igual à nova data de fim da tarefa principal
+          if (dependentTaskStartDate <= taskEndDate) {
+            const taskDuration = calculateDaysBetween(dependentTask.start, dependentTask.end); // Calcula a duração original
+
+            // Ajusta a nova data de início e fim da tarefa dependente
+            const newStartDate = new Date(taskEndDate.getTime() + (24 * 60 * 60 * 1000)); // Um dia após a data de fim da tarefa principal
+            const newEndDate = new Date(newStartDate.getTime() + (taskDuration * 24 * 60 * 60 * 1000)); // Mantém a duração
+
+            dependentTask.start = newStartDate.toISOString().split('T')[0];
+            dependentTask.end = newEndDate.toISOString().split('T')[0];
+
+            // Chama recursivamente para ajustar as tarefas que dependem dessa tarefa
+            adjustDependentTasks(index);
+          }
+        }
+      });
     }
 
 
@@ -282,7 +290,7 @@
       });
     }
 
-    // Função para calcular o número de dias entre duas datas
+    // Função para calcular a diferença entre duas datas em dias
     function calculateDaysBetween(startDate, endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
