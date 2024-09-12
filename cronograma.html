@@ -176,16 +176,35 @@
       downloadAnchorNode.remove();
     }
 
+    // Função para importar o JSON
     function importTasks(event) {
       const file = event.target.files[0];
+      if (!file) return; // Se nenhum arquivo foi selecionado, não faz nada
+
       const reader = new FileReader();
       reader.onload = function (e) {
-        tasks = JSON.parse(e.target.result);
-        renderTable();
-        updateChart();
+        try {
+          const importedTasks = JSON.parse(e.target.result);
+
+          // Verifica se o arquivo contém uma lista de tarefas válida
+          if (Array.isArray(importedTasks)) {
+            tasks = importedTasks; // Sobrescreve a lista de tarefas com o novo arquivo
+            renderTable(); // Re-renderiza a tabela com as novas tarefas
+            updateChart(); // Atualiza o gráfico com as novas tarefas
+          } else {
+            alert('O arquivo não contém uma lista válida de tarefas.');
+          }
+        } catch (error) {
+          alert('Erro ao ler o arquivo. Verifique o formato do arquivo e tente novamente.');
+        }
       };
       reader.readAsText(file);
+
+      // Reseta o campo de arquivo após o carregamento
+      event.target.value = ''; // Isso permite que o mesmo arquivo seja carregado novamente se necessário
     }
+
+
 
     let draggedTaskIndex = null;
 
