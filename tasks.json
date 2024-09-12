@@ -111,7 +111,7 @@
     "id": "Fase10",
     "name": "Treinamento dos Pontos Focais",
     "resource": "CCENTER + UVXP",
-    "start": "2025-02-30",
+    "start": "2025-02-28",
     "end": "2025-03-03",
     "percentComplete": 0,
     "dependencies": "Fase9"
