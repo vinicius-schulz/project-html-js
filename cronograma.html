@@ -112,32 +112,58 @@
     }
 
     // Função para atualizar a tarefa conforme o input
+    // Função para atualizar a tarefa conforme o input
     function updateTask(index, field, value) {
-      const oldId = tasks[index].id;
+      const oldValue = tasks[index][field]; // Valor antigo para comparação
+      const taskIds = tasks.map(task => task.id); // Lista de todos os IDs de tarefas
 
-      // Se o campo alterado for o ID, devemos atualizar as dependências de outras tarefas
-      if (field === 'id' && value !== oldId) {
-        // Atualiza o ID da tarefa atual
-        tasks[index][field] = value;
+      // Verifica se o campo alterado é o campo de dependências
+      if (field === 'dependencies') {
+        // Se o valor for vazio, o usuário quer remover as dependências, então permitimos isso
+        if (value.trim() === '') {
+          tasks[index][field] = value;
+        } else {
+          // Separar múltiplas dependências
+          const dependencies = value.split(',').map(dep => dep.trim());
 
-        // Varrer todas as outras tarefas para renomear dependências
-        tasks.forEach((task) => {
-          if (task.dependencies) {
-            // Verificar se a dependência contém o oldId
-            const dependencies = task.dependencies.split(',');
-            const updatedDependencies = dependencies.map(dep => dep.trim() === oldId ? value : dep.trim());
-            task.dependencies = updatedDependencies.join(', ');
+          // Verificar se todas as dependências existem na lista de tarefas
+          const invalidDependencies = dependencies.filter(dep => !taskIds.includes(dep));
+
+          // Se houver dependências inválidas, alertar o usuário e reverter a mudança
+          if (invalidDependencies.length > 0) {
+            alert(`As seguintes dependências não existem: ${invalidDependencies.join(', ')}`);
+            tasks[index][field] = oldValue; // Reverter para o valor antigo
+          } else {
+            tasks[index][field] = value; // Atualiza se todas as dependências forem válidas
           }
-        });
+        }
       } else {
-        // Atualiza qualquer outro campo
-        tasks[index][field] = value;
+        // Atualizar ID e recalcular dependências, conforme o comportamento anterior
+        if (field === 'id' && value !== oldValue) {
+          const oldId = oldValue;
+          tasks[index][field] = value;
+
+          // Varrer todas as outras tarefas para renomear dependências
+          tasks.forEach((task) => {
+            if (task.dependencies) {
+              const dependencies = task.dependencies.split(',');
+              const updatedDependencies = dependencies.map(dep => dep.trim() === oldId ? value : dep.trim());
+              task.dependencies = updatedDependencies.join(', ');
+            }
+          });
+        } else {
+          // Se for outro campo (não dependências ou ID), apenas atualiza
+          tasks[index][field] = value;
+        }
       }
 
       // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
     }
+
+
+
 
 
     function exportTasks() {
