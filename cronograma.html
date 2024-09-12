@@ -72,13 +72,13 @@
       updateChart();
     }
 
-    // Função para renderizar a tabela de tarefas
+    // Função para renderizar a tabela de tarefas com arrastar e soltar
     function renderTable() {
       const tableBody = document.getElementById('task_table_body');
       tableBody.innerHTML = ''; // Limpa a tabela
       tasks.forEach((task, index) => {
         const row = `
-            <tr>
+            <tr draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
               <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
               <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
               <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
@@ -122,6 +122,32 @@
       reader.readAsText(file);
     }
 
+    // Variável global para manter o índice do item que está sendo arrastado
+    let draggedTaskIndex = null;
+
+    // Função para iniciar o arraste de uma linha
+    function dragStart(event, index) {
+      draggedTaskIndex = index;
+    }
+
+    // Função para permitir que o item seja arrastado sobre outro
+    function dragOver(event) {
+      event.preventDefault(); // Necessário para permitir o drop
+    }
+
+    // Função para trocar a posição das tarefas ao soltar
+    function drop(event, dropIndex) {
+      event.preventDefault();
+      if (draggedTaskIndex !== null) {
+        const draggedTask = tasks[draggedTaskIndex];
+        tasks.splice(draggedTaskIndex, 1); // Remove a tarefa arrastada da posição original
+        tasks.splice(dropIndex, 0, draggedTask); // Insere a tarefa na nova posição
+        draggedTaskIndex = null; // Reseta o índice
+        renderTable(); // Re-renderiza a tabela
+        updateChart(); // Atualiza o gráfico
+      }
+    }
+
     window.onload = function () {
       renderTable(); // Renderiza a tabela ao carregar a página
     }
@@ -145,6 +171,10 @@
       /* Permite o redimensionamento horizontal das colunas */
       overflow: hidden;
       /* Esconde o conteúdo que ultrapassar */
+    }
+
+    tr[draggable="true"] {
+      cursor: move;
     }
   </style>
 

@@ -48,8 +48,8 @@
     "id": "Fase5",
     "name": "Configuração da Plataforma Google Cloud",
     "resource": "UVXP",
-    "start": "2024-07-29",
-    "end": "2024-08-11",
+    "start": "2024-08-29",
+    "end": "2024-09-11",
     "percentComplete": 100,
     "dependencies": null
   },
@@ -57,8 +57,8 @@
     "id": "Fase5.1",
     "name": "Provisionar números de telefones não produtivos",
     "resource": "GEINF",
-    "start": "2024-07-19",
-    "end": "2024-08-22",
+    "start": "2024-08-19",
+    "end": "2024-09-22",
     "percentComplete": 100,
     "dependencies": null
   },
@@ -66,8 +66,8 @@
     "id": "Fase6",
     "name": "Configuração do Google CCAIP",
     "resource": "TTEC",
-    "start": "2024-08-23",
-    "end": "2024-09-04",
+    "start": "2024-09-23",
+    "end": "2024-10-04",
     "percentComplete": 0,
     "dependencies": "Fase3, Fase5, Fase2, Fase5.1"
   },
@@ -75,8 +75,8 @@
     "id": "Fase6.1",
     "name": "Parametrização com Requisitos de Negócio",
     "resource": "TTEC",
-    "start": "2024-09-07",
-    "end": "2024-09-18",
+    "start": "2024-10-07",
+    "end": "2024-10-18",
     "percentComplete": 0,
     "dependencies": "Fase6"
   },
@@ -84,8 +84,8 @@
     "id": "Fase7",
     "name": "Disponibilização das APIs Internas",
     "resource": "GESIS",
-    "start": "2024-08-20",
-    "end": "2024-09-18",
+    "start": "2024-09-20",
+    "end": "2024-10-18",
     "percentComplete": 0,
     "dependencies": null
   },
@@ -93,7 +93,7 @@
     "id": "Fase8",
     "name": "Implementação e teste dos fluxos de atendimento",
     "resource": "HVAR",
-    "start": "2024-09-21",
+    "start": "2024-10-21",
     "end": "2025-02-06",
     "percentComplete": 0,
     "dependencies": "Fase6.1, Fase7"
@@ -147,7 +147,7 @@
     "id": "Fase13.1",
     "name": "Acompanhamento e suporte de negócio",
     "resource": "CCENTER",
-    "start": "2024-07-01",
+    "start": "2024-08-01",
     "end": "2025-05-14",
     "percentComplete": 0,
     "dependencies": null
@@ -156,7 +156,7 @@
     "id": "Fase13.2",
     "name": "Acompanhamento e suporte técnico",
     "resource": "UVXP",
-    "start": "2024-07-01",
+    "start": "2024-08-01",
     "end": "2025-05-14",
     "percentComplete": 0,
     "dependencies": null
