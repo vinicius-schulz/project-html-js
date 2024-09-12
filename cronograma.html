@@ -71,11 +71,20 @@
     // Função para remover uma tarefa com verificação de dependências
     function deleteTask(index) {
       const taskId = tasks[index].id;
+
+      // Se a tarefa não tem ID, permitir exclusão
+      if (!taskId) {
+        tasks.splice(index, 1);
+        renderTable();
+        updateChart();
+        return;
+      }
+
       const dependentTasks = isDependency(taskId);
 
       if (dependentTasks.length > 0) {
         // Lista as tarefas que dependem da tarefa que se quer excluir
-        const taskNames = dependentTasks.map(task => task.id).join(', ');
+        const taskNames = dependentTasks.map(task => task.name).join(', ');
         alert(`A tarefa ${taskId} é uma dependência das seguintes tarefas: ${taskNames}. Não é possível excluí-la.`);
         return; // Impede a exclusão
       }
@@ -85,6 +94,7 @@
       renderTable();
       updateChart();
     }
+
 
 
 
