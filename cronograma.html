@@ -111,10 +111,34 @@
       });
     }
 
+    // Função para atualizar a tarefa conforme o input
     function updateTask(index, field, value) {
-      tasks[index][field] = value;
+      const oldId = tasks[index].id;
+
+      // Se o campo alterado for o ID, devemos atualizar as dependências de outras tarefas
+      if (field === 'id' && value !== oldId) {
+        // Atualiza o ID da tarefa atual
+        tasks[index][field] = value;
+
+        // Varrer todas as outras tarefas para renomear dependências
+        tasks.forEach((task) => {
+          if (task.dependencies) {
+            // Verificar se a dependência contém o oldId
+            const dependencies = task.dependencies.split(',');
+            const updatedDependencies = dependencies.map(dep => dep.trim() === oldId ? value : dep.trim());
+            task.dependencies = updatedDependencies.join(', ');
+          }
+        });
+      } else {
+        // Atualiza qualquer outro campo
+        tasks[index][field] = value;
+      }
+
+      // Atualiza o gráfico e a tabela
+      renderTable();
       updateChart();
     }
+
 
     function exportTasks() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
