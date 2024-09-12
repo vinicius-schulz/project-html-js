@@ -116,8 +116,26 @@
         // Calcula o número de dias entre a data de início e fim da tarefa
         const days = task.start && task.end ? calculateDaysBetween(task.start, task.end) : '';
 
+        const currentDate = new Date().toISOString().split('T')[0]; // Data atual no formato YYYY-MM-DD
+        const endDate = task.end ? new Date(task.end).toISOString().split('T')[0] : null; // Data de fim no formato YYYY-MM-DD
+        const percentCompleteReal = task.percentCompleteReal || 0; // Valor do percentual real, padrão é 0 se não informado
+
+        let rowColor = ''; // Define a cor da linha
+
+        // Verifica as condições para a cor da linha
+        if (percentCompleteReal == 100) {
+          rowColor = 'background-color: lightgreen;'; // Linha verde para 100%
+        } else if (new Date(currentDate) > new Date(endDate)) {
+          rowColor = 'background-color: lightpink;'; // Linha rosa claro se ultrapassou a data final e não está 100%
+        } else if (currentDate === endDate) {
+          rowColor = 'background-color: lightyellow;'; // Linha amarela se for a data final e não está 100%
+        } else {
+          rowColor = ''; // Manter linha branca
+        }
+
+        // Criação da linha da tabela com a cor condicional
         const row = `
-      <tr draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
+      <tr style="${rowColor}" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
         <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
         <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
         <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
@@ -125,7 +143,7 @@
         <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
         <td>${days}</td> <!-- Nova coluna que mostra o número de dias -->
         <td><input type="number" value="${task.percentComplete}" disabled/></td> <!-- Percentual completo não editável -->
-        <td><input type="number" value="${task.percentCompleteReal || ''}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Nova coluna para Percentual Completo Real -->
+        <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Nova coluna para Percentual Completo Real -->
         <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
         <td>
           <button onclick="deleteTask(${index})">Excluir</button>
