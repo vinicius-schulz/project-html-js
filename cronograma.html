@@ -88,28 +88,34 @@
 
 
 
+    // Função para renderizar a tabela de tarefas com arrastar e soltar
     function renderTable() {
       const tableBody = document.getElementById('task_table_body');
-      tableBody.innerHTML = '';
+      tableBody.innerHTML = ''; // Limpa a tabela
       tasks.forEach((task, index) => {
+        // Calcula o número de dias entre a data de início e fim da tarefa
+        const days = task.start && task.end ? calculateDaysBetween(task.start, task.end) : '';
+
         const row = `
-            <tr draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
-              <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
-              <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
-              <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
-              <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
-              <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
-              <td><input type="number" value="${task.percentComplete}" onblur="updateTask(${index}, 'percentComplete', this.value)" /></td>
-              <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
-              <td>
-                <button onclick="deleteTask(${index})">Excluir</button>
-                <button onclick="adjustTask(${index})">Ajustar</button>
-              </td>
-            </tr>
-          `;
+        <tr draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
+          <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
+          <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
+          <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
+          <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
+          <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
+          <td>${days}</td> <!-- Nova coluna que mostra o número de dias -->
+          <td><input type="number" value="${task.percentComplete}" onblur="updateTask(${index}, 'percentComplete', this.value)" /></td>
+          <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
+          <td>
+            <button onclick="deleteTask(${index})">Excluir</button>
+            <button onclick="adjustTask(${index})">Ajustar</button>
+          </td>
+        </tr>
+      `;
         tableBody.innerHTML += row;
       });
     }
+
 
     // Função para atualizar a tarefa conforme o input
     // Função para atualizar a tarefa conforme o input
@@ -266,6 +272,16 @@
       });
     }
 
+    // Função para calcular o número de dias entre duas datas
+    function calculateDaysBetween(startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      const diffTime = Math.abs(end - start); // Diferença em milissegundos
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converter milissegundos para dias
+      return diffDays;
+    }
+
+
     window.onload = function () {
       renderTable();
     }
@@ -301,6 +317,46 @@
     table input[type="number"] {
       color: black;
     }
+
+    table {
+      width: 100%;
+      table-layout: auto;
+      border-collapse: collapse;
+      /* Remove o espaço entre as células */
+    }
+
+    th {
+      resize: horizontal;
+      /* Permite o redimensionamento horizontal */
+      overflow: hidden;
+      /* Garante que o conteúdo que exceder o tamanho da célula seja ocultado */
+      padding: 8px;
+    }
+
+    td {
+      padding: 8px;
+    }
+
+    th,
+    td {
+      text-align: left;
+    }
+
+    input,
+    select {
+      width: 100%;
+      /* Faz com que o input ocupe 100% do espaço da célula */
+      box-sizing: border-box;
+      /* Garante que o padding seja incluído no tamanho total do input */
+      background-color: transparent;
+      /* Define o fundo transparente */
+      border: none;
+      /* Remove a borda dos inputs */
+    }
+
+    tr[draggable="true"] {
+      cursor: move;
+    }
   </style>
 </head>
 
@@ -319,6 +375,7 @@
         <th>Recurso</th>
         <th>Data de Início</th>
         <th>Data Fim</th>
+        <th>Dias</th> <!-- Cabeçalho da nova coluna -->
         <th>Percentual completo</th>
         <th>Dependências</th>
         <th>Ações</th>
@@ -327,8 +384,9 @@
     <tbody id="task_table_body"></tbody>
   </table>
 
+
   <h1>Cronograma Executivo - Implantação do Google CCAI Platform</h1>
-  <div id="gantt_chart" style="width: 100%; height: 600px;"></div>  
+  <div id="gantt_chart" style="width: 100%; height: 600px;"></div>
 </body>
 
 </html>
