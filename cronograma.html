@@ -112,25 +112,36 @@
     function renderTable() {
       const tableBody = document.getElementById('task_table_body');
       tableBody.innerHTML = ''; // Limpa a tabela
-      tasks.forEach((task, index) => {
-        // Calcula o número de dias entre a data de início e fim da tarefa
-        const days = task.start && task.end ? calculateDaysBetween(task.start, task.end) : '';
 
-        const currentDate = new Date().toISOString().split('T')[0]; // Data atual no formato YYYY-MM-DD
-        const endDate = task.end ? new Date(task.end).toISOString().split('T')[0] : null; // Data de fim no formato YYYY-MM-DD
+      tasks.forEach((task, index) => {
+        const startDate = new Date(task.start);
+        const endDate = new Date(task.end);
+        const currentDate = new Date(); // Data atual
         const percentCompleteReal = task.percentCompleteReal || 0; // Valor do percentual real, padrão é 0 se não informado
+
+        let daysTotal = calculateDaysBetween(task.start, task.end); // Duração total em dias
+        let daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias passados até a data atual
+
+        // Calcula o percentual do cronograma
+        let percentCronograma;
+        if (currentDate < startDate) {
+          percentCronograma = 0; // A tarefa ainda não começou
+        } else if (currentDate > endDate) {
+          percentCronograma = 100; // A tarefa já terminou
+        } else {
+          percentCronograma = (daysPassed / daysTotal) * 100; // A tarefa está em andamento
+        }
+        percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor esteja entre 0 e 100
 
         let rowColor = ''; // Define a cor da linha
 
         // Verifica as condições para a cor da linha
         if (percentCompleteReal == 100) {
           rowColor = 'background-color: lightgreen;'; // Linha verde para 100%
-        } else if (new Date(currentDate) > new Date(endDate)) {
+        } else if (currentDate > endDate) {
           rowColor = 'background-color: lightpink;'; // Linha rosa claro se ultrapassou a data final e não está 100%
-        } else if (currentDate === endDate) {
+        } else if (currentDate.toISOString().split('T')[0] === task.end) {
           rowColor = 'background-color: lightyellow;'; // Linha amarela se for a data final e não está 100%
-        } else {
-          rowColor = ''; // Manter linha branca
         }
 
         // Criação da linha da tabela com a cor condicional
@@ -141,9 +152,9 @@
         <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
         <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
         <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
-        <td>${days}</td> <!-- Nova coluna que mostra o número de dias -->
-        <td><input type="number" value="${task.percentComplete}" disabled/></td> <!-- Percentual completo não editável -->
-        <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Nova coluna para Percentual Completo Real -->
+        <td>${daysTotal}</td> <!-- Nova coluna que mostra o número de dias -->
+        <td>${percentCronograma.toFixed(2)}%</td> <!-- Percentual de cronograma calculado -->
+        <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
         <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
         <td>
           <button onclick="deleteTask(${index})">Excluir</button>
@@ -154,6 +165,7 @@
         tableBody.innerHTML += row;
       });
     }
+
 
 
 
@@ -329,14 +341,14 @@
       });
     }
 
-    // Função para calcular a diferença entre duas datas em dias
     function calculateDaysBetween(startDate, endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const diffTime = Math.abs(end - start); // Diferença em milissegundos
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converter milissegundos para dias
+      const diffTime = end - start; // Diferença em milissegundos
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte milissegundos para dias
       return diffDays;
     }
+
 
 
     window.onload = function () {
@@ -448,7 +460,7 @@
         <th>Data de Início</th>
         <th>Data Fim</th>
         <th>Dias</th>
-        <th>Percentual completo</th> <!-- Coluna antiga, agora não editável -->
+        <th>% Cronograma</th> <!-- Coluna antiga, agora não editável -->
         <th>Percentual completo real</th> <!-- Nova coluna -->
         <th>Dependências</th>
         <th>Ações</th>
