@@ -27,29 +27,48 @@
         data.addColumn('number', 'Percentual completo');
         data.addColumn('string', 'Dependencias');
 
+        const currentDate = new Date(); // Data atual
+
         tasks.forEach(task => {
+          const startDate = new Date(task.start);
+          const endDate = new Date(task.end);
+          const daysTotal = calculateDaysBetween(task.start, task.end); // Duração total
+          const daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias passados até a data atual
+
+          // Cálculo do % Cronograma
+          let percentCronograma;
+          if (currentDate < startDate) {
+            percentCronograma = 0; // A tarefa ainda não começou
+          } else if (currentDate > endDate) {
+            percentCronograma = 100; // A tarefa já terminou
+          } else {
+            percentCronograma = (daysPassed / daysTotal) * 100; // A tarefa está em andamento
+          }
+          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor fique entre 0 e 100
+
+          // Adiciona a linha ao gráfico
           data.addRow([
             task.id,
             task.name,
             task.resource,
             new Date(task.start),
             new Date(task.end),
-            null,
-            task.percentComplete,
+            null, // Deixe a duração como null para que o Gantt use as datas
+            percentCronograma, // Usando o percentual de cronograma calculado
             task.dependencies ? task.dependencies : ''
           ]);
         });
 
-        // Obtém a altura e largura do contêiner
+        // Configurações do gráfico
         var container = document.getElementById('gantt_chart');
-        var containerHeight = container.offsetHeight || window.innerHeight;  // Usar altura da janela caso não haja altura no contêiner
-        var containerWidth = container.offsetWidth || window.innerWidth;     // Usar largura da janela caso não haja largura no contêiner
+        var containerHeight = container.offsetHeight || window.innerHeight;
+        var containerWidth = container.offsetWidth || window.innerWidth;
 
         var options = {
-          height: containerHeight,  // Define altura do gráfico baseada no contêiner
-          width: containerWidth,    // Define largura do gráfico baseada no contêiner
+          height: containerHeight,
+          width: containerWidth,
           gantt: {
-            trackHeight: 30,  // Altura das barras das tarefas no gráfico (opcional)
+            trackHeight: 30,
             criticalPathEnabled: true,
             criticalPathStyle: {
               stroke: '#e64a19',
@@ -62,6 +81,7 @@
         chart.draw(data, options);
       }
     }
+
 
     function updateChart() {
       drawChart();
