@@ -162,45 +162,39 @@
       const oldValue = tasks[index][field]; // Valor antigo para comparação
 
       if (field === 'dependencies') {
-        const dependencies = value.split(',').map(dep => dep.trim());
-        const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
+        if (value.trim() === '') {
+          // Se o campo de dependências estiver vazio, significa que a tarefa não tem dependências
+          tasks[index][field] = ''; // Permite deixar em branco
+        } else {
+          const dependencies = value.split(',').map(dep => dep.trim());
+          const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
 
-        if (invalidDependencies.length > 0) {
-          alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
-          tasks[index][field] = oldValue;
-          renderTable();
-          return;
-        }
-      }
-
-      if (field === 'end') {
-        tasks[index][field] = value;
-        adjustDependentTasks(index);
-      } else if (field === 'id' && value !== oldValue) {
-        const oldId = oldValue;
-        tasks[index][field] = value;
-
-        tasks.forEach((task) => {
-          if (task.dependencies) {
-            const dependencies = task.dependencies.split(',');
-            const updatedDependencies = dependencies.map(dep => dep.trim() === oldId ? value : dep.trim());
-            task.dependencies = updatedDependencies.join(', ');
+          if (invalidDependencies.length > 0) {
+            alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
+            // Restaurar o campo para o valor antigo
+            tasks[index][field] = oldValue;
+            renderTable();
+            return;
           }
-        });
+        }
       } else if (field === 'percentCompleteReal') {
+        // Verificar se o valor inserido no percentual completo real é válido
         const numValue = Number(value.trim());
         if (isNaN(numValue) || numValue < 0 || numValue > 100) {
           alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
           return;
         }
-        tasks[index][field] = numValue;  // Atualiza o Percentual Completo Real
+        tasks[index][field] = numValue;  // Converte o valor para número
       } else {
+        // Atualiza qualquer outro campo
         tasks[index][field] = value.trim();
       }
 
+      // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
     }
+
 
 
 
