@@ -1,0 +1,150 @@
+[
+  {
+    "id": "Fase1",
+    "name": "Assinatura de Contratos",
+    "resource": "Jurídico + SUTIN",
+    "start": "2024-08-12",
+    "end": "2024-09-13",
+    "percentComplete": 70,
+    "dependencies": null,
+    "percentCompleteReal": 66
+  },
+  {
+    "id": "Fase2",
+    "name": "Levantamento Tecnológico e de Necessidades",
+    "resource": "UVXP + GEINF",
+    "start": "2024-08-12",
+    "end": "2024-09-13",
+    "percentComplete": 80,
+    "dependencies": null,
+    "percentCompleteReal": 80
+  },
+  {
+    "id": "Fase2.1",
+    "name": "Diagnóstico do Negócio",
+    "resource": "CCENTER",
+    "start": "2024-08-23",
+    "end": "2024-09-16",
+    "percentComplete": 80,
+    "dependencies": null,
+    "percentCompleteReal": 80
+  },
+  {
+    "id": "Fase3",
+    "name": "Kickoff do Projeto com Time Unimed",
+    "resource": "UVXP",
+    "start": "2024-09-18",
+    "end": "2024-09-19",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase4",
+    "name": "Planejamento Detalhado e Gestão de Mudanças",
+    "resource": "PMO",
+    "start": "2024-09-16",
+    "end": "2024-09-27",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase5",
+    "name": "Configuração da Plataforma Google Cloud",
+    "resource": "UVXP",
+    "start": "2024-08-29",
+    "end": "2024-09-11",
+    "percentComplete": 100,
+    "dependencies": null,
+    "percentCompleteReal": 100
+  },
+  {
+    "id": "Fase5.1",
+    "name": "Provisionar números de telefones não produtivos",
+    "resource": "GEINF",
+    "start": "2024-09-10",
+    "end": "2024-09-20",
+    "percentComplete": 100,
+    "dependencies": null
+  },
+  {
+    "id": "Fase6",
+    "name": "Configuração do Google CCAIP",
+    "resource": "TTEC",
+    "start": "2024-09-23",
+    "end": "2024-10-25",
+    "percentComplete": 0,
+    "dependencies": "Fase3, Fase5, Fase2, Fase5.1"
+  },
+  {
+    "id": "Fase7",
+    "name": "Disponibilização das APIs Internas",
+    "resource": "GESIS",
+    "start": "2024-09-16",
+    "end": "2024-10-25",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase8",
+    "name": "Implementação e teste dos fluxos de atendimento",
+    "resource": "HVAR",
+    "start": "2024-10-28",
+    "end": "2025-03-07",
+    "percentComplete": 0,
+    "dependencies": "Fase6, Fase7"
+  },
+  {
+    "id": "Fase9",
+    "name": "Testes Integrados",
+    "resource": "CCENTER + UVXP + GEINF + GESIS",
+    "start": "2025-03-08",
+    "end": "2025-03-12",
+    "percentComplete": 0,
+    "dependencies": "Fase8"
+  },
+  {
+    "id": "Fase10",
+    "name": "Treinamento dos Pontos Focais",
+    "resource": "CCENTER + UVXP",
+    "start": "2025-03-13",
+    "end": "2025-03-16",
+    "percentComplete": 0,
+    "dependencies": "Fase9"
+  },
+  {
+    "id": "Fase12",
+    "name": "Implantação e Go-Live",
+    "resource": "Todos",
+    "start": "2025-03-22",
+    "end": "2025-03-23",
+    "percentComplete": 0,
+    "dependencies": "Fase10"
+  },
+  {
+    "id": "Fase13",
+    "name": "Acompanhamento e Monitoramento",
+    "resource": "CCENTER + UVXP + GEINF + GESIS",
+    "start": "2025-03-24",
+    "end": "2025-05-23",
+    "percentComplete": 0,
+    "dependencies": "Fase12"
+  },
+  {
+    "id": "Fase13.1",
+    "name": "Acompanhamento e suporte de negócio",
+    "resource": "CCENTER",
+    "start": "2024-08-01",
+    "end": "2025-05-23",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase13.2",
+    "name": "Acompanhamento e suporte técnico",
+    "resource": "UVXP",
+    "start": "2024-08-01",
+    "end": "2025-05-23",
+    "percentComplete": 0,
+    "dependencies": null
+  }
+]
