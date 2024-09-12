@@ -62,11 +62,31 @@
       updateChart();
     }
 
+    // Função para verificar se a tarefa é uma dependência de outras tarefas
+    function isDependency(taskId) {
+      const dependentTasks = tasks.filter(task => task.dependencies && task.dependencies.includes(taskId));
+      return dependentTasks;
+    }
+
+    // Função para remover uma tarefa com verificação de dependências
     function deleteTask(index) {
+      const taskId = tasks[index].id;
+      const dependentTasks = isDependency(taskId);
+
+      if (dependentTasks.length > 0) {
+        // Lista as tarefas que dependem da tarefa que se quer excluir
+        const taskNames = dependentTasks.map(task => task.id).join(', ');
+        alert(`A tarefa ${taskId} é uma dependência das seguintes tarefas: ${taskNames}. Não é possível excluí-la.`);
+        return; // Impede a exclusão
+      }
+
+      // Caso não seja dependência de outra tarefa, exclui normalmente
       tasks.splice(index, 1);
       renderTable();
       updateChart();
     }
+
+
 
     function renderTable() {
       const tableBody = document.getElementById('task_table_body');
@@ -182,34 +202,36 @@
     }
   </script>
   <style>
-tr:hover {
-  background-color: #f0f0f0; /* Cor de fundo ao passar o mouse */
-}
+    tr:hover {
+      background-color: #f0f0f0;
+      /* Cor de fundo ao passar o mouse */
+    }
 
-table input {
-  background-color: transparent;
-  border: none;
-  outline: none;
-  pointer-events: none; /* Impede a interação enquanto o mouse está sobre a linha */
-}
+    table input {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      pointer-events: none;
+      /* Impede a interação enquanto o mouse está sobre a linha */
+    }
 
-tr:hover input {
-  pointer-events: auto; /* Permite interação com os inputs ao passar o mouse */
-}
+    tr:hover input {
+      pointer-events: auto;
+      /* Permite interação com os inputs ao passar o mouse */
+    }
 
-table input[type="text"]::placeholder {
-  color: black; /* Define a cor do placeholder como preto, para que ele se destaque se necessário */
-}
+    table input[type="text"]::placeholder {
+      color: black;
+      /* Define a cor do placeholder como preto, para que ele se destaque se necessário */
+    }
 
-table input[type="date"] {
-  color: black;
-}
+    table input[type="date"] {
+      color: black;
+    }
 
-table input[type="number"] {
-  color: black;
-}
-
-
+    table input[type="number"] {
+      color: black;
+    }
   </style>
 </head>
 
