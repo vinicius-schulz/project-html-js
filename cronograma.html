@@ -141,11 +141,22 @@
     function updateTask(index, field, value) {
       const oldValue = tasks[index][field]; // Valor antigo para comparação
 
+      if (field === 'dependencies') {
+        const dependencies = value.split(',').map(dep => dep.trim());
+        const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
+
+        if (invalidDependencies.length > 0) {
+          alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
+          // Restaurar o campo para o valor antigo
+          tasks[index][field] = oldValue;
+          renderTable();
+          return;
+        }
+      }
+
       // Se o campo alterado for a data de fim, verificar e ajustar as dependências
       if (field === 'end') {
         tasks[index][field] = value;
-
-        // Ajustar as tarefas dependentes se a data de fim for alterada
         adjustDependentTasks(index);
       } else if (field === 'id' && value !== oldValue) {
         const oldId = oldValue;
@@ -176,6 +187,7 @@
       renderTable();
       updateChart();
     }
+
 
 
     // Função para ajustar a data das tarefas dependentes de forma recursiva
