@@ -124,7 +124,8 @@
         <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
         <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
         <td>${days}</td> <!-- Nova coluna que mostra o número de dias -->
-        <td><input type="number" value="${task.percentComplete}" onblur="updateTask(${index}, 'percentComplete', this.value)" /></td>
+        <td><input type="number" value="${task.percentComplete}" disabled/></td> <!-- Percentual completo não editável -->
+        <td><input type="number" value="${task.percentCompleteReal || ''}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Nova coluna para Percentual Completo Real -->
         <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
         <td>
           <button onclick="deleteTask(${index})">Excluir</button>
@@ -138,6 +139,7 @@
 
 
 
+
     function updateTask(index, field, value) {
       const oldValue = tasks[index][field]; // Valor antigo para comparação
 
@@ -147,14 +149,12 @@
 
         if (invalidDependencies.length > 0) {
           alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
-          // Restaurar o campo para o valor antigo
           tasks[index][field] = oldValue;
           renderTable();
           return;
         }
       }
 
-      // Se o campo alterado for a data de fim, verificar e ajustar as dependências
       if (field === 'end') {
         tasks[index][field] = value;
         adjustDependentTasks(index);
@@ -162,7 +162,6 @@
         const oldId = oldValue;
         tasks[index][field] = value;
 
-        // Varrer todas as outras tarefas para renomear dependências
         tasks.forEach((task) => {
           if (task.dependencies) {
             const dependencies = task.dependencies.split(',');
@@ -170,20 +169,17 @@
             task.dependencies = updatedDependencies.join(', ');
           }
         });
-      } else if (field === 'percentComplete') {
-        // Verificar se o valor inserido no percentual completo é válido
+      } else if (field === 'percentCompleteReal') {
         const numValue = Number(value.trim());
         if (isNaN(numValue) || numValue < 0 || numValue > 100) {
-          alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo.');
+          alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
           return;
         }
-        tasks[index][field] = numValue;  // Converte o valor para número
+        tasks[index][field] = numValue;  // Atualiza o Percentual Completo Real
       } else {
-        // Atualiza qualquer outro campo
         tasks[index][field] = value.trim();
       }
 
-      // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
     }
@@ -439,12 +435,14 @@
         <th>Recurso</th>
         <th>Data de Início</th>
         <th>Data Fim</th>
-        <th>Dias</th> <!-- Cabeçalho da nova coluna -->
-        <th>Percentual completo</th>
+        <th>Dias</th>
+        <th>Percentual completo</th> <!-- Coluna antiga, agora não editável -->
+        <th>Percentual completo real</th> <!-- Nova coluna -->
         <th>Dependências</th>
         <th>Ações</th>
       </tr>
     </thead>
+
     <tbody id="task_table_body"></tbody>
   </table>
 
