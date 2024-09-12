@@ -12,7 +12,7 @@
     "id": "Fase2",
     "name": "Levantamento Tecnológico e de Necessidades",
     "resource": "UVXP + GEINF",
-    "start": "2024-08-19",
+    "start": "2024-08-12",
     "end": "2024-09-13",
     "percentComplete": 80,
     "dependencies": null
@@ -39,8 +39,8 @@
     "id": "Fase4",
     "name": "Planejamento Detalhado e Gestão de Mudanças",
     "resource": "PMO",
-    "start": "2024-09-19",
-    "end": "2024-09-26",
+    "start": "2024-09-16",
+    "end": "2024-09-27",
     "percentComplete": 0,
     "dependencies": null
   },
@@ -57,8 +57,8 @@
     "id": "Fase5.1",
     "name": "Provisionar números de telefones não produtivos",
     "resource": "GEINF",
-    "start": "2024-08-19",
-    "end": "2024-09-22",
+    "start": "2024-09-10",
+    "end": "2024-09-20",
     "percentComplete": 100,
     "dependencies": null
   },
@@ -67,25 +67,16 @@
     "name": "Configuração do Google CCAIP",
     "resource": "TTEC",
     "start": "2024-09-23",
-    "end": "2024-10-04",
+    "end": "2024-10-25",
     "percentComplete": 0,
     "dependencies": "Fase3, Fase5, Fase2, Fase5.1"
-  },
-  {
-    "id": "Fase6.1",
-    "name": "Parametrização com Requisitos de Negócio",
-    "resource": "TTEC",
-    "start": "2024-10-07",
-    "end": "2024-10-18",
-    "percentComplete": 0,
-    "dependencies": "Fase6"
   },
   {
     "id": "Fase7",
     "name": "Disponibilização das APIs Internas",
     "resource": "GESIS",
-    "start": "2024-09-20",
-    "end": "2024-10-18",
+    "start": "2024-09-16",
+    "end": "2024-10-25",
     "percentComplete": 0,
     "dependencies": null
   },
@@ -93,17 +84,17 @@
     "id": "Fase8",
     "name": "Implementação e teste dos fluxos de atendimento",
     "resource": "HVAR",
-    "start": "2024-10-21",
-    "end": "2025-02-06",
+    "start": "2024-10-28",
+    "end": "2025-03-07",
     "percentComplete": 0,
-    "dependencies": "Fase6.1, Fase7"
+    "dependencies": "Fase6, Fase7"
   },
   {
     "id": "Fase9",
     "name": "Testes Integrados",
     "resource": "CCENTER + UVXP + GEINF + GESIS",
-    "start": "2025-02-23",
-    "end": "2025-02-27",
+    "start": "2025-03-08",
+    "end": "2025-03-12",
     "percentComplete": 0,
     "dependencies": "Fase8"
   },
@@ -111,35 +102,26 @@
     "id": "Fase10",
     "name": "Treinamento dos Pontos Focais",
     "resource": "CCENTER + UVXP",
-    "start": "2025-02-30",
-    "end": "2025-03-03",
+    "start": "2025-03-13",
+    "end": "2025-03-16",
     "percentComplete": 0,
     "dependencies": "Fase9"
   },
   {
-    "id": "Fase11",
-    "name": "Implantação Canário",
+    "id": "Fase12",
+    "name": "Implantação e Go-Live",
     "resource": "Todos",
-    "start": "2025-03-06",
-    "end": "2025-03-10",
+    "start": "2025-03-22",
+    "end": "2025-03-23",
     "percentComplete": 0,
     "dependencies": "Fase10"
-  },
-  {
-    "id": "Fase12",
-    "name": "Go-Live",
-    "resource": "Todos",
-    "start": "2025-03-13",
-    "end": "2025-03-14",
-    "percentComplete": 0,
-    "dependencies": "Fase11"
   },
   {
     "id": "Fase13",
     "name": "Acompanhamento e Monitoramento",
     "resource": "CCENTER + UVXP + GEINF + GESIS",
-    "start": "2025-03-15",
-    "end": "2025-05-14",
+    "start": "2025-03-24",
+    "end": "2025-05-23",
     "percentComplete": 0,
     "dependencies": "Fase12"
   },
@@ -148,7 +130,7 @@
     "name": "Acompanhamento e suporte de negócio",
     "resource": "CCENTER",
     "start": "2024-08-01",
-    "end": "2025-05-14",
+    "end": "2025-05-23",
     "percentComplete": 0,
     "dependencies": null
   },
@@ -157,7 +139,7 @@
     "name": "Acompanhamento e suporte técnico",
     "resource": "UVXP",
     "start": "2024-08-01",
-    "end": "2025-05-14",
+    "end": "2025-05-23",
     "percentComplete": 0,
     "dependencies": null
   }
