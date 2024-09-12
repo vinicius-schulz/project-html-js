@@ -43,7 +43,11 @@
         var options = {
           height: 600,
           gantt: {
-            trackHeight: 30
+            criticalPathEnabled: true,
+            criticalPathStyle: {
+              stroke: '#e64a19',
+              strokeWidth: 5
+            }
           }
         };
 
@@ -98,7 +102,6 @@
 
 
 
-    // Função para renderizar a tabela de tarefas com arrastar e soltar
     function renderTable() {
       const tableBody = document.getElementById('task_table_body');
       tableBody.innerHTML = ''; // Limpa a tabela
@@ -107,27 +110,27 @@
         const days = task.start && task.end ? calculateDaysBetween(task.start, task.end) : '';
 
         const row = `
-        <tr draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
-          <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
-          <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
-          <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
-          <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
-          <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
-          <td>${days}</td> <!-- Nova coluna que mostra o número de dias -->
-          <td><input type="number" value="${task.percentComplete}" onblur="updateTask(${index}, 'percentComplete', this.value)" /></td>
-          <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
-          <td>
-            <button onclick="deleteTask(${index})">Excluir</button>
-            <button onclick="adjustTask(${index})">Ajustar</button>
-          </td>
-        </tr>
-      `;
+      <tr draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
+        <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
+        <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
+        <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
+        <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
+        <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
+        <td>${days}</td> <!-- Nova coluna que mostra o número de dias -->
+        <td><input type="number" value="${task.percentComplete}" onblur="updateTask(${index}, 'percentComplete', this.value)" /></td>
+        <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
+        <td>
+          <button onclick="deleteTask(${index})">Excluir</button>
+          <button onclick="adjustTask(${index})">Ajustar</button>
+        </td>
+      </tr>
+    `;
         tableBody.innerHTML += row;
       });
     }
 
 
-    // Função para atualizar a tarefa conforme o input
+
     function updateTask(index, field, value) {
       const oldValue = tasks[index][field]; // Valor antigo para comparação
 
@@ -149,15 +152,24 @@
             task.dependencies = updatedDependencies.join(', ');
           }
         });
+      } else if (field === 'percentComplete') {
+        // Verificar se o valor inserido no percentual completo é válido
+        const numValue = Number(value.trim());
+        if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+          alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo.');
+          return;
+        }
+        tasks[index][field] = numValue;  // Converte o valor para número
       } else {
         // Atualiza qualquer outro campo
-        tasks[index][field] = value;
+        tasks[index][field] = value.trim();
       }
 
       // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
     }
+
 
     // Função para ajustar a data das tarefas dependentes de forma recursiva
     function adjustDependentTasks(taskIndex) {
