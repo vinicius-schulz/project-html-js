@@ -9,23 +9,7 @@
   <script type="text/javascript">
     let tasks = [
       { id: 'Fase1', name: 'Assinatura de Contratos', resource: 'Jurídico + SUTIN', start: '2024-08-12', end: '2024-09-13', percentComplete: 70, dependencies: null },
-      { id: 'Fase2', name: 'Levantamento Tecnológico e de Necessidades', resource: 'UVXP + GEINF', start: '2024-08-19', end: '2024-09-13', percentComplete: 80, dependencies: null },
-      { id: 'Fase2.1', name: 'Diagnóstico do Negócio', resource: 'CCENTER', start: '2024-08-23', end: '2024-09-16', percentComplete: 80, dependencies: null },
-      { id: 'Fase3', name: 'Kickoff do Projeto com Time Unimed', resource: 'UVXP', start: '2024-09-18', end: '2024-09-19', percentComplete: 0, dependencies: null },
-      { id: 'Fase4', name: 'Planejamento Detalhado e Gestão de Mudanças', resource: 'PMO', start: '2024-09-19', end: '2024-09-26', percentComplete: 0, dependencies: null },
-      { id: 'Fase5', name: 'Configuração da Plataforma Google Cloud', resource: 'UVXP', start: '2024-07-29', end: '2024-08-11', percentComplete: 100, dependencies: null },
-      { id: 'Fase5.1', name: 'Provisionar números de telefones não produtivos', resource: 'GEINF', start: '2024-07-19', end: '2024-08-22', percentComplete: 100, dependencies: null },
-      { id: 'Fase6', name: 'Configuração do Google CCAIP', resource: 'TTEC', start: '2024-08-23', end: '2024-09-04', percentComplete: 0, dependencies: 'Fase3, Fase5, Fase2, Fase5.1' },
-      { id: 'Fase6.1', name: 'Parametrização com Requisitos de Negócio', resource: 'TTEC', start: '2024-09-07', end: '2024-09-18', percentComplete: 0, dependencies: 'Fase6' },
-      { id: 'Fase7', name: 'Disponibilização das APIs Internas', resource: 'GESIS', start: '2024-08-20', end: '2024-09-18', percentComplete: 0, dependencies: null },
-      { id: 'Fase8', name: 'Implementação e teste dos fluxos de atendimento', resource: 'HVAR', start: '2024-09-21', end: '2025-02-06', percentComplete: 0, dependencies: 'Fase6.1, Fase7' },
-      { id: 'Fase9', name: 'Testes Integrados', resource: 'CCENTER + UVXP + GEINF + GESIS', start: '2025-02-23', end: '2025-02-27', percentComplete: 0, dependencies: 'Fase8' },
-      { id: 'Fase10', name: 'Treinamento dos Pontos Focais', resource: 'CCENTER + UVXP', start: '2025-02-30', end: '2025-03-03', percentComplete: 0, dependencies: 'Fase9' },
-      { id: 'Fase11', name: 'Implantação Canário', resource: 'Todos', start: '2025-03-06', end: '2025-03-10', percentComplete: 0, dependencies: 'Fase10' },
-      { id: 'Fase12', name: 'Go-Live', resource: 'Todos', start: '2025-03-13', end: '2025-03-14', percentComplete: 0, dependencies: 'Fase11' },
-      { id: 'Fase13', name: 'Acompanhamento e Monitoramento', resource: 'CCENTER + UVXP + GEINF + GESIS', start: '2025-03-15', end: '2025-05-14', percentComplete: 0, dependencies: 'Fase12' },
-      { id: 'Fase13.1', name: 'Acompanhamento e suporte de negócio', resource: 'CCENTER', start: '2024-07-01', end: '2025-05-14', percentComplete: 0, dependencies: null },
-      { id: 'Fase13.2', name: 'Acompanhamento e suporte técnico', resource: 'UVXP', start: '2024-07-01', end: '2025-05-14', percentComplete: 0, dependencies: null }
+      // ... outras tarefas ...
     ];
 
     google.charts.load('current', {
@@ -116,6 +100,29 @@
       updateChart();
     }
 
+    // Função para exportar o JSON
+    function exportTasks() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "tasks.json");
+      document.body.appendChild(downloadAnchorNode); // Required for Firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    // Função para importar o JSON
+    function importTasks(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        tasks = JSON.parse(e.target.result);
+        renderTable();
+        updateChart();
+      };
+      reader.readAsText(file);
+    }
+
     window.onload = function () {
       renderTable(); // Renderiza a tabela ao carregar a página
     }
@@ -150,6 +157,9 @@
 
   <h2>Tarefas</h2>
   <button onclick="addTask()">Adicionar Tarefa</button>
+  <button onclick="exportTasks()">Exportar JSON</button>
+  <input type="file" id="fileInput" accept=".json" onchange="importTasks(event)" />
+  
   <table style="width: 100%; margin-top: 10px;">
     <thead>
       <tr>
