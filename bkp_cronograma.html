@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR"> <!-- Mudei o lang para pt-BR -->
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma do Projeto Google CCAI Platform</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      // Carrega a biblioteca com a localidade definida para português
+      google.charts.load('current', {
+        'packages': ['gantt'],
+        'language': 'pt-BR' // Define o idioma como português
+      });
+      
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Id da tarefa');
+        data.addColumn('string', 'Nome da tarefa');
+        data.addColumn('string', 'Recurso');
+        data.addColumn('date', 'Data de Início');
+        data.addColumn('date', 'Data Fim');
+        data.addColumn('number', 'Duração');
+        data.addColumn('number', 'Percentual completo');
+        data.addColumn('string', 'Dependencias');
+
+        data.addRows([
+          ['Fase1', 'Assinatura de Contratos', 'Jurídico + SUTIN', new Date(2024, 7, 12), new Date(2024, 8, 13), null, 70, null],
+          ['Fase2', 'Levantamento Tecnológico e de Necessidades', 'UVXP + GEINF', new Date(2024, 7, 19), new Date(2024, 8, 13), null, 80, null],
+          ['Fase2.1', 'Diagnóstico do Negócio', 'CCENTER', new Date(2024, 7, 23), new Date(2024, 8, 16), null, 80, null],
+          ['Fase3', 'Kickoff do Projeto com Time Unimed', 'UVXP', new Date(2024, 8, 18), new Date(2024, 8, 19), null, 0, null],
+          ['Fase4', 'Planejamento Detalhado e Gestão de Mudanças', 'PMO', new Date(2024, 8, 19), new Date(2024, 8, 26), null, 0, null],
+          ['Fase5', 'Configuração da Plataforma Google Cloud', 'UVXP', new Date(2024, 7, 29), new Date(2024, 8, 11), null, 100, null],
+          ['Fase5.1', 'Provisionar números de telefones não produtivos', 'GEINF', new Date(2024, 7, 19), new Date(2024, 8, 22), null, 100, null],
+          ['Fase6', 'Configuração do Google CCAIP', 'TTEC', new Date(2024, 8, 23), new Date(2024, 9, 4), null, 0, 'Fase3, Fase5, Fase2, Fase5.1'],
+          ['Fase6.1', 'Parametrização com Requisitos de Negócio', 'TTEC', new Date(2024, 9, 7), new Date(2024, 9, 18), null, 0, 'Fase6'],
+          ['Fase7', 'Disponibilização das APIs Internas', 'GESIS', new Date(2024, 8, 20), new Date(2024, 9, 18), null, 0, null],
+          ['Fase8', 'Implementação e teste dos fluxos de atendimento', 'HVAR', new Date(2024, 9, 21), new Date(2025, 2, 6), null, 0, 'Fase6.1, Fase7'],
+          ['Fase9', 'Testes Integrados', 'CCENTER + UVXP + GEINF + GESIS', new Date(2025, 2, 23), new Date(2025, 2, 27), null, 0, 'Fase8'],
+          ['Fase10', 'Treinamento dos Pontos Focais', 'CCENTER + UVXP', new Date(2025, 2, 30), new Date(2025, 3, 3), null, 0, 'Fase9'],
+          ['Fase11', 'Implantação Canário', 'Todos', new Date(2025, 3, 6), new Date(2025, 3, 10), null, 0, 'Fase10'],
+          ['Fase12', 'Go-Live', 'Todos', new Date(2025, 3, 13), new Date(2025, 3, 14), null, 0, 'Fase11'],
+          ['Fase13', 'Acompanhamento e Monitoramento', 'CCENTER + UVXP + GEINF + GESIS', new Date(2025, 3, 15), new Date(2025, 5, 14), null, 0, 'Fase12'],
+          ['Fase13.1', 'Acompanhamento e suporte de negócio', 'CCENTER', new Date(2024, 7, 1), new Date(2025, 5, 14), null, 0, null],
+          ['Fase13.2', 'Acompanhamento e suporte técnico', 'UVXP', new Date(2024, 7, 1), new Date(2025, 5, 14), null, 0, null],
+        ]);
+
+        var options = {
+          height: 600,
+          gantt: {
+            trackHeight: 30
+          }
+        };
+
+        var chart = new google.visualization.Gantt(document.getElementById('gantt_chart'));
+
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Cronograma Executivo - Implantação do Google CCAI Platform</h1>
+    <div id="gantt_chart" style="width: 100%; height: 600px;"></div>
+  </body>
+</html>

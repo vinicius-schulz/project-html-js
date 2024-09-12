@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR"> 
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma do Projeto Google CCAI Platform</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      let tasks = [
+        {id: 'Fase1', name: 'Assinatura de Contratos', resource: 'Jurídico + SUTIN', start: '2024-08-12', end: '2024-09-13', percentComplete: 70, dependencies: null},
+        {id: 'Fase2', name: 'Levantamento Tecnológico e de Necessidades', resource: 'UVXP + GEINF', start: '2024-08-19', end: '2024-09-13', percentComplete: 80, dependencies: null},
+        {id: 'Fase2.1', name: 'Diagnóstico do Negócio', resource: 'CCENTER', start: '2024-08-23', end: '2024-09-16', percentComplete: 80, dependencies: null},
+        {id: 'Fase3', name: 'Kickoff do Projeto com Time Unimed', resource: 'UVXP', start: '2024-09-18', end: '2024-09-19', percentComplete: 0, dependencies: null},
+        {id: 'Fase4', name: 'Planejamento Detalhado e Gestão de Mudanças', resource: 'PMO', start: '2024-09-19', end: '2024-09-26', percentComplete: 0, dependencies: null},
+        {id: 'Fase5', name: 'Configuração da Plataforma Google Cloud', resource: 'UVXP', start: '2024-07-29', end: '2024-08-11', percentComplete: 100, dependencies: null},
+        {id: 'Fase5.1', name: 'Provisionar números de telefones não produtivos', resource: 'GEINF', start: '2024-07-19', end: '2024-08-22', percentComplete: 100, dependencies: null},
+        {id: 'Fase6', name: 'Configuração do Google CCAIP', resource: 'TTEC', start: '2024-08-23', end: '2024-09-04', percentComplete: 0, dependencies: 'Fase3, Fase5, Fase2, Fase5.1'},
+        {id: 'Fase6.1', name: 'Parametrização com Requisitos de Negócio', resource: 'TTEC', start: '2024-09-07', end: '2024-09-18', percentComplete: 0, dependencies: 'Fase6'},
+        {id: 'Fase7', name: 'Disponibilização das APIs Internas', resource: 'GESIS', start: '2024-08-20', end: '2024-09-18', percentComplete: 0, dependencies: null},
+        {id: 'Fase8', name: 'Implementação e teste dos fluxos de atendimento', resource: 'HVAR', start: '2024-09-21', end: '2025-02-06', percentComplete: 0, dependencies: 'Fase6.1, Fase7'},
+        {id: 'Fase9', name: 'Testes Integrados', resource: 'CCENTER + UVXP + GEINF + GESIS', start: '2025-02-23', end: '2025-02-27', percentComplete: 0, dependencies: 'Fase8'},
+        {id: 'Fase10', name: 'Treinamento dos Pontos Focais', resource: 'CCENTER + UVXP', start: '2025-02-30', end: '2025-03-03', percentComplete: 0, dependencies: 'Fase9'},
+        {id: 'Fase11', name: 'Implantação Canário', resource: 'Todos', start: '2025-03-06', end: '2025-03-10', percentComplete: 0, dependencies: 'Fase10'},
+        {id: 'Fase12', name: 'Go-Live', resource: 'Todos', start: '2025-03-13', end: '2025-03-14', percentComplete: 0, dependencies: 'Fase11'},
+        {id: 'Fase13', name: 'Acompanhamento e Monitoramento', resource: 'CCENTER + UVXP + GEINF + GESIS', start: '2025-03-15', end: '2025-05-14', percentComplete: 0, dependencies: 'Fase12'},
+        {id: 'Fase13.1', name: 'Acompanhamento e suporte de negócio', resource: 'CCENTER', start: '2024-07-01', end: '2025-05-14', percentComplete: 0, dependencies: null},
+        {id: 'Fase13.2', name: 'Acompanhamento e suporte técnico', resource: 'UVXP', start: '2024-07-01', end: '2025-05-14', percentComplete: 0, dependencies: null}
+      ];
+
+      google.charts.load('current', {
+        'packages': ['gantt'],
+        'language': 'pt-BR'
+      });
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Função para desenhar o gráfico de Gantt
+      function drawChart() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Id da tarefa');
+        data.addColumn('string', 'Nome da tarefa');
+        data.addColumn('string', 'Recurso');
+        data.addColumn('date', 'Data de Início');
+        data.addColumn('date', 'Data Fim');
+        data.addColumn('number', 'Duração');
+        data.addColumn('number', 'Percentual completo');
+        data.addColumn('string', 'Dependencias');
+
+        tasks.forEach(task => {
+          data.addRow([
+            task.id,
+            task.name,
+            task.resource,
+            new Date(task.start),
+            new Date(task.end),
+            null,
+            task.percentComplete,
+            task.dependencies
+          ]);
+        });
+
+        var options = {
+          height: 600,
+          gantt: {
+            trackHeight: 30
+          }
+        };
+
+        var chart = new google.visualization.Gantt(document.getElementById('gantt_chart'));
+        chart.draw(data, options);
+      }
+
+      // Função para atualizar o gráfico quando os dados forem alterados
+      function updateChart() {
+        drawChart();
+      }
+
+      // Função para adicionar uma nova tarefa
+      function addTask() {
+        tasks.push({id: '', name: '', resource: '', start: '', end: '', percentComplete: 0, dependencies: ''});
+        renderTable();
+        updateChart();
+      }
+
+      // Função para remover uma tarefa
+      function deleteTask(index) {
+        tasks.splice(index, 1);
+        renderTable();
+        updateChart();
+      }
+
+      // Função para renderizar a tabela de tarefas
+      function renderTable() {
+        const tableBody = document.getElementById('task_table_body');
+        tableBody.innerHTML = ''; // Limpa a tabela
+        tasks.forEach((task, index) => {
+          const row = `
+            <tr>
+              <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
+              <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
+              <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
+              <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
+              <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
+              <td><input type="number" value="${task.percentComplete}" onblur="updateTask(${index}, 'percentComplete', this.value)" /></td>
+              <td><input type="text" value="${task.dependencies}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
+              <td><button onclick="deleteTask(${index})">Excluir</button></td>
+            </tr>
+          `;
+          tableBody.innerHTML += row;
+        });
+      }
+
+      // Função para atualizar a tarefa conforme o input
+      function updateTask(index, field, value) {
+        tasks[index][field] = value;
+        updateChart();
+      }
+
+      window.onload = function() {
+        renderTable(); // Renderiza a tabela ao carregar a página
+      }
+    </script>
+	<style>
+	  table input {
+		width: 100%; /* Faz o input ocupar toda a largura da célula */
+		box-sizing: border-box; /* Garante que o padding não ultrapasse a célula */
+	  }
+	  table {
+		table-layout: auto; /* Permite redimensionamento das colunas */
+		width: 100%;
+	  }
+	  th {
+		resize: horizontal; /* Permite o redimensionamento horizontal das colunas */
+		overflow: hidden; /* Esconde o conteúdo que ultrapassar */
+	  }
+	</style>
+
+  </head>
+  <body>
+    <h1>Cronograma Executivo - Implantação do Google CCAI Platform</h1>
+    <div id="gantt_chart" style="width: 100%; height: 600px;"></div>
+    
+    <h2>Tarefas</h2>
+    <button onclick="addTask()">Adicionar Tarefa</button>
+    <table border="1" style="width: 100%; margin-top: 10px;">
+      <thead>
+        <tr>
+          <th>Id da tarefa</th>
+          <th>Nome da tarefa</th>
+          <th>Recurso</th>
+          <th>Data de Início</th>
+          <th>Data Fim</th>
+          <th>Percentual completo</th>
+          <th>Dependências</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="task_table_body"></tbody>
+    </table>
+  </body>
+</html>
