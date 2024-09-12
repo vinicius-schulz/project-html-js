@@ -182,24 +182,34 @@
     }
   </script>
   <style>
-    table input {
-      width: 100%;
-      box-sizing: border-box;
-    }
+tr:hover {
+  background-color: #f0f0f0; /* Cor de fundo ao passar o mouse */
+}
 
-    table {
-      table-layout: auto;
-      width: 100%;
-    }
+table input {
+  background-color: transparent;
+  border: none;
+  outline: none;
+  pointer-events: none; /* Impede a interação enquanto o mouse está sobre a linha */
+}
 
-    th {
-      resize: horizontal;
-      overflow: hidden;
-    }
+tr:hover input {
+  pointer-events: auto; /* Permite interação com os inputs ao passar o mouse */
+}
 
-    tr[draggable="true"] {
-      cursor: move;
-    }
+table input[type="text"]::placeholder {
+  color: black; /* Define a cor do placeholder como preto, para que ele se destaque se necessário */
+}
+
+table input[type="date"] {
+  color: black;
+}
+
+table input[type="number"] {
+  color: black;
+}
+
+
   </style>
 </head>
 
