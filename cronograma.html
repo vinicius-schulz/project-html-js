@@ -153,6 +153,12 @@
         }
         percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor esteja entre 0 e 100
 
+        // Calcula os dias para o início da tarefa
+        let daysToStart = calculateDaysBetween(currentDate.toISOString().split('T')[0], task.start);
+        if (daysToStart <= 0) {
+          daysToStart = ''; // Deixar em branco se for negativo ou zero
+        }
+
         let rowColor = ''; // Define a cor da linha
 
         // Verifica as condições para a cor da linha
@@ -164,7 +170,7 @@
           rowColor = 'background-color: lightyellow;'; // Linha amarela se for a data final e não está 100%
         }
 
-        // Criação da linha da tabela com a cor condicional
+        // Criação da linha da tabela com a cor condicional e a nova coluna "Dias para início"
         const row = `
       <tr style="${rowColor}" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
         <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
@@ -173,6 +179,7 @@
         <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
         <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
         <td>${daysTotal}</td> <!-- Nova coluna que mostra o número de dias -->
+        <td>${daysToStart}</td> <!-- Nova coluna "Dias para início", em branco se <= 0 -->
         <td>${percentCronograma.toFixed(2)}%</td> <!-- Percentual de cronograma calculado -->
         <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
         <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
@@ -185,6 +192,8 @@
         tableBody.innerHTML += row;
       });
     }
+
+
 
 
 
@@ -480,12 +489,14 @@
         <th>Data de Início</th>
         <th>Data Fim</th>
         <th>Dias</th>
-        <th>% Cronograma</th> <!-- Coluna antiga, agora não editável -->
-        <th>Percentual completo real</th> <!-- Nova coluna -->
+        <th>Dias para início</th> <!-- Nova coluna -->
+        <th>% Cronograma</th>
+        <th>Percentual completo real</th>
         <th>Dependências</th>
         <th>Ações</th>
       </tr>
     </thead>
+
 
     <tbody id="task_table_body"></tbody>
   </table>
