@@ -27,39 +27,36 @@
         data.addColumn('number', 'Percentual completo');
         data.addColumn('string', 'Dependencias');
 
-        const currentDate = new Date(); // Data atual
+        const currentDate = new Date();
 
         tasks.forEach(task => {
           const startDate = new Date(task.start);
           const endDate = new Date(task.end);
-          const daysTotal = calculateDaysBetween(task.start, task.end); // Duração total
-          const daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias passados até a data atual
+          const daysTotal = calculateDaysBetween(task.start, task.end);
+          const daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]);
 
-          // Cálculo do % Cronograma
           let percentCronograma;
           if (currentDate < startDate) {
-            percentCronograma = 0; // A tarefa ainda não começou
+            percentCronograma = 0;
           } else if (currentDate > endDate) {
-            percentCronograma = 100; // A tarefa já terminou
+            percentCronograma = 100;
           } else {
-            percentCronograma = (daysPassed / daysTotal) * 100; // A tarefa está em andamento
+            percentCronograma = (daysPassed / daysTotal) * 100;
           }
-          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor fique entre 0 e 100
+          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100);
 
-          // Adiciona a linha ao gráfico
           data.addRow([
             task.id,
             task.name,
             task.resource,
             new Date(task.start),
             new Date(task.end),
-            null, // Deixe a duração como null para que o Gantt use as datas
-            percentCronograma, // Usando o percentual de cronograma calculado
-            task.dependencies ? task.dependencies : ''
+            null,
+            percentCronograma,
+            task.dependencies ? task.dependencies : null
           ]);
         });
 
-        // Configurações do gráfico
         var container = document.getElementById('gantt_chart');
         var containerHeight = container.offsetHeight || window.innerHeight;
         var containerWidth = container.offsetWidth || window.innerWidth;
@@ -74,6 +71,12 @@
               stroke: '#e64a19',
               strokeWidth: 5
             }
+            //,arrow: {
+            //  angle: 90,
+            //  width: 3,
+            //  color: 'green',
+            //  radius: 45
+            //}
           }
         };
 
@@ -200,12 +203,11 @@
 
 
     function updateTask(index, field, value) {
-      const oldValue = tasks[index][field]; // Valor antigo para comparação
+      const oldValue = tasks[index][field];
 
       if (field === 'dependencies') {
         if (value.trim() === '') {
-          // Se o campo de dependências estiver vazio, significa que a tarefa não tem dependências
-          tasks[index][field] = ''; // Permite deixar em branco
+          tasks[index][field] = ''; // Permite deixar em branco sem alertas
         } else {
           const dependencies = value.split(',').map(dep => dep.trim());
           const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
@@ -216,22 +218,21 @@
             tasks[index][field] = oldValue;
             renderTable();
             return;
+          } else {
+            tasks[index][field] = dependencies.join(','); // Atualiza as dependências
           }
         }
       } else if (field === 'percentCompleteReal') {
-        // Verificar se o valor inserido no percentual completo real é válido
         const numValue = Number(value.trim());
         if (isNaN(numValue) || numValue < 0 || numValue > 100) {
           alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
           return;
         }
-        tasks[index][field] = numValue;  // Converte o valor para número
+        tasks[index][field] = numValue;
       } else {
-        // Atualiza qualquer outro campo
         tasks[index][field] = value.trim();
       }
 
-      // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
     }
