@@ -27,36 +27,39 @@
         data.addColumn('number', 'Percentual completo');
         data.addColumn('string', 'Dependencias');
 
-        const currentDate = new Date();
+        const currentDate = new Date(); // Data atual
 
         tasks.forEach(task => {
           const startDate = new Date(task.start);
           const endDate = new Date(task.end);
-          const daysTotal = calculateDaysBetween(task.start, task.end);
-          const daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]);
+          const daysTotal = calculateDaysBetween(task.start, task.end); // Duração total
+          const daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias passados até a data atual
 
+          // Cálculo do % Cronograma
           let percentCronograma;
           if (currentDate < startDate) {
-            percentCronograma = 0;
+            percentCronograma = 0; // A tarefa ainda não começou
           } else if (currentDate > endDate) {
-            percentCronograma = 100;
+            percentCronograma = 100; // A tarefa já terminou
           } else {
-            percentCronograma = (daysPassed / daysTotal) * 100;
+            percentCronograma = (daysPassed / daysTotal) * 100; // A tarefa está em andamento
           }
-          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100);
+          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor fique entre 0 e 100
 
+          // Adiciona a linha ao gráfico
           data.addRow([
             task.id,
             task.name,
             task.resource,
             new Date(task.start),
             new Date(task.end),
-            null,
-            percentCronograma,
+            null, // Deixe a duração como null para que o Gantt use as datas
+            percentCronograma, // Usando o percentual de cronograma calculado
             task.dependencies ? task.dependencies : null
           ]);
         });
 
+        // Configurações do gráfico
         var container = document.getElementById('gantt_chart');
         var containerHeight = container.offsetHeight || window.innerHeight;
         var containerWidth = container.offsetWidth || window.innerWidth;
@@ -72,10 +75,10 @@
               strokeWidth: 5
             }
             //,arrow: {
-            //  angle: 90,
-            //  width: 3,
+            //  angle: 100,
+            //  width: 5,
             //  color: 'green',
-            //  radius: 45
+            //  radius: 0
             //}
           }
         };
@@ -84,7 +87,6 @@
         chart.draw(data, options);
       }
     }
-
 
     function updateChart() {
       drawChart();
@@ -96,41 +98,25 @@
       updateChart();
     }
 
-    // Função para verificar se a tarefa é uma dependência de outras tarefas
-    function isDependency(taskId) {
-      const dependentTasks = tasks.filter(task => task.dependencies && task.dependencies.includes(taskId));
-      return dependentTasks;
-    }
-
-    // Função para remover uma tarefa com verificação de dependências
+    // Função para remover uma tarefa e ajustar as dependências
     function deleteTask(index) {
       const taskId = tasks[index].id;
 
-      // Se a tarefa não tem ID, permitir exclusão
-      if (!taskId) {
-        tasks.splice(index, 1);
-        renderTable();
-        updateChart();
-        return;
-      }
-
-      const dependentTasks = isDependency(taskId);
-
-      if (dependentTasks.length > 0) {
-        // Lista as tarefas que dependem da tarefa que se quer excluir
-        const taskNames = dependentTasks.map(task => task.name).join(', ');
-        alert(`A tarefa ${taskId} é uma dependência das seguintes tarefas: ${taskNames}. Não é possível excluí-la.`);
-        return; // Impede a exclusão
-      }
-
-      // Caso não seja dependência de outra tarefa, exclui normalmente
+      // Remove a tarefa
       tasks.splice(index, 1);
+
+      // Remove referências à tarefa excluída nas dependências das outras tarefas
+      tasks.forEach(task => {
+        if (task.dependencies) {
+          const dependencies = task.dependencies.split(',').map(dep => dep.trim());
+          const updatedDependencies = dependencies.filter(dep => dep !== taskId);
+          task.dependencies = updatedDependencies.join(',');
+        }
+      });
+
       renderTable();
       updateChart();
     }
-
-
-
 
     function renderTable() {
       const tableBody = document.getElementById('task_table_body');
@@ -196,14 +182,8 @@
       });
     }
 
-
-
-
-
-
-
     function updateTask(index, field, value) {
-      const oldValue = tasks[index][field];
+      const oldValue = tasks[index][field]; // Valor antigo para comparação
 
       if (field === 'dependencies') {
         if (value.trim() === '') {
@@ -222,54 +202,43 @@
             tasks[index][field] = dependencies.join(','); // Atualiza as dependências
           }
         }
+      } else if (field === 'id') {
+        const newId = value.trim();
+        if (newId === '') {
+          alert('O ID da tarefa não pode ser vazio.');
+          return;
+        }
+        // Verifica se o novo ID já está em uso por outra tarefa
+        if (tasks.some((task, idx) => idx !== index && task.id === newId)) {
+          alert('Este ID já está em uso por outra tarefa.');
+          return;
+        }
+        // Atualiza as dependências das outras tarefas
+        tasks.forEach(task => {
+          if (task.dependencies) {
+            const dependencies = task.dependencies.split(',').map(dep => dep.trim());
+            const updatedDependencies = dependencies.map(dep => dep === oldValue ? newId : dep);
+            task.dependencies = updatedDependencies.join(',');
+          }
+        });
+        tasks[index][field] = newId;
       } else if (field === 'percentCompleteReal') {
+        // Verificar se o valor inserido no percentual completo real é válido
         const numValue = Number(value.trim());
         if (isNaN(numValue) || numValue < 0 || numValue > 100) {
           alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
           return;
         }
-        tasks[index][field] = numValue;
+        tasks[index][field] = numValue;  // Converte o valor para número
       } else {
+        // Atualiza qualquer outro campo
         tasks[index][field] = value.trim();
       }
 
+      // Atualiza o gráfico e a tabela
       renderTable();
       updateChart();
     }
-
-
-
-
-    // Função para ajustar a data das tarefas dependentes de forma recursiva
-    function adjustDependentTasks(taskIndex) {
-      const task = tasks[taskIndex];
-      const taskEndDate = new Date(task.end);
-
-      tasks.forEach((dependentTask, index) => {
-        if (dependentTask.dependencies && dependentTask.dependencies.includes(task.id)) {
-          const dependentTaskStartDate = new Date(dependentTask.start);
-
-          // Se a data de início da tarefa dependente for menor ou igual à nova data de fim da tarefa principal
-          if (dependentTaskStartDate <= taskEndDate) {
-            const taskDuration = calculateDaysBetween(dependentTask.start, dependentTask.end); // Calcula a duração original
-
-            // Ajusta a nova data de início e fim da tarefa dependente
-            const newStartDate = new Date(taskEndDate.getTime() + (24 * 60 * 60 * 1000)); // Um dia após a data de fim da tarefa principal
-            const newEndDate = new Date(newStartDate.getTime() + (taskDuration * 24 * 60 * 60 * 1000)); // Mantém a duração
-
-            dependentTask.start = newStartDate.toISOString().split('T')[0];
-            dependentTask.end = newEndDate.toISOString().split('T')[0];
-
-            // Chama recursivamente para ajustar as tarefas que dependem dessa tarefa
-            adjustDependentTasks(index);
-          }
-        }
-      });
-    }
-
-
-
-
 
     function exportTasks() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
@@ -308,8 +277,6 @@
       // Reseta o campo de arquivo após o carregamento
       event.target.value = ''; // Isso permite que o mesmo arquivo seja carregado novamente se necessário
     }
-
-
 
     let draggedTaskIndex = null;
 
@@ -357,16 +324,19 @@
     function adjustDependencies(taskIndex, diff) {
       const task = tasks[taskIndex];
       tasks.forEach((dependentTask, index) => {
-        if (dependentTask.dependencies && dependentTask.dependencies.includes(task.id)) {
-          const start = new Date(dependentTask.start);
-          const end = new Date(dependentTask.end);
+        if (dependentTask.dependencies) {
+          const dependencies = dependentTask.dependencies.split(',').map(dep => dep.trim());
+          if (dependencies.includes(task.id)) {
+            const start = new Date(dependentTask.start);
+            const end = new Date(dependentTask.end);
 
-          // Ajusta as datas de início e fim
-          dependentTask.start = new Date(start.getTime() + diff).toISOString().split('T')[0];
-          dependentTask.end = new Date(end.getTime() + diff).toISOString().split('T')[0];
+            // Ajusta as datas de início e fim
+            dependentTask.start = new Date(start.getTime() + diff).toISOString().split('T')[0];
+            dependentTask.end = new Date(end.getTime() + diff).toISOString().split('T')[0];
 
-          // Chama recursivamente para ajustar os dependentes dessa tarefa
-          adjustDependencies(index, diff);
+            // Chama recursivamente para ajustar os dependentes dessa tarefa
+            adjustDependencies(index, diff);
+          }
         }
       });
     }
@@ -378,8 +348,6 @@
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte milissegundos para dias
       return diffDays;
     }
-
-
 
     window.onload = function () {
       renderTable();
@@ -474,8 +442,6 @@
 </head>
 
 <body>
-
-
   <h2>Tarefas</h2>
   <button onclick="addTask()">Adicionar Tarefa</button>
   <button onclick="exportTasks()">Exportar JSON</button>
@@ -490,21 +456,18 @@
         <th>Data de Início</th>
         <th>Data Fim</th>
         <th>Dias</th>
-        <th>Dias para início</th> <!-- Nova coluna -->
+        <th>Dias para início</th>
         <th>% Cronograma</th>
         <th>Percentual completo real</th>
         <th>Dependências</th>
         <th>Ações</th>
       </tr>
     </thead>
-
-
     <tbody id="task_table_body"></tbody>
   </table>
 
   <h1>Cronograma</h1>
   <div id="gantt_chart" style="height: 100%; width: 100%;"></div>
 </body>
-
 
 </html>

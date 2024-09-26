@@ -1,0 +1,168 @@
+[
+  {
+    "id": "Fase1",
+    "name": "Assinatura de Contratos",
+    "resource": "Jurídico + SUTIN",
+    "start": "2024-08-12",
+    "end": "2024-09-13",
+    "percentComplete": 70,
+    "dependencies": "",
+    "percentCompleteReal": 100
+  },
+  {
+    "id": "Fase2",
+    "name": "Levantamento Tecnológico e de Necessidades",
+    "resource": "UVXP + GEINF",
+    "start": "2024-08-12",
+    "end": "2024-09-13",
+    "percentComplete": 80,
+    "dependencies": null,
+    "percentCompleteReal": 100
+  },
+  {
+    "id": "Fase2.1",
+    "name": "Diagnóstico do Negócio",
+    "resource": "CCENTER",
+    "start": "2024-08-23",
+    "end": "2024-09-16",
+    "percentComplete": 80,
+    "dependencies": null,
+    "percentCompleteReal": 100
+  },
+  {
+    "id": "Fase3",
+    "name": "Kickoff do Projeto com Time Unimed",
+    "resource": "UVXP",
+    "start": "2024-10-03",
+    "end": "2024-10-04",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase3.2",
+    "name": "Kickoff do Projeto com HVAR",
+    "resource": "HVAR + UVXP + CCENTER",
+    "start": "2024-10-08",
+    "end": "2024-10-09",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase3.1",
+    "name": "Planejamento Detalhado e Gestão de Mudanças",
+    "resource": "PMO",
+    "start": "2024-09-16",
+    "end": "2024-09-27",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase5",
+    "name": "Configuração da Plataforma Google Cloud",
+    "resource": "UVXP",
+    "start": "2024-08-29",
+    "end": "2024-09-11",
+    "percentComplete": 100,
+    "dependencies": null,
+    "percentCompleteReal": 100
+  },
+  {
+    "id": "Fase5.1",
+    "name": "Provisionar números de telefones não produtivos",
+    "resource": "GEINF",
+    "start": "2024-09-10",
+    "end": "2024-10-03",
+    "percentComplete": 100,
+    "dependencies": null
+  },
+  {
+    "id": "Fase6",
+    "name": "Configuração do Google CCAIP",
+    "resource": "TTEC",
+    "start": "2024-10-07",
+    "end": "2024-11-11",
+    "percentComplete": 0,
+    "dependencies": "Fase3,Fase5,Fase2,Fase5.1"
+  },
+  {
+    "id": "Fase7",
+    "name": "Disponibilização das APIs Internas",
+    "resource": "GESIS",
+    "start": "2024-09-16",
+    "end": "2024-11-06",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase8",
+    "name": "Levantamento de requisitos",
+    "resource": "HVAR",
+    "start": "2024-10-10",
+    "end": "2024-11-10",
+    "percentComplete": 0,
+    "dependencies": "Fase7,Fase3.2"
+  },
+  {
+    "id": "Fase8.1",
+    "name": "Implementação e teste dos fluxos de atendimento",
+    "resource": "HVAR",
+    "start": "2024-11-11",
+    "end": "2025-02-25",
+    "percentComplete": 0,
+    "dependencies": "Fase7,Fase8"
+  },
+  {
+    "id": "Fase9",
+    "name": "Testes Integrados",
+    "resource": "CCENTER + UVXP + GEINF + GESIS",
+    "start": "2025-02-26",
+    "end": "2025-03-02",
+    "percentComplete": 0,
+    "dependencies": "Fase8.1,Fase6"
+  },
+  {
+    "id": "Fase10",
+    "name": "Treinamento dos Pontos Focais",
+    "resource": "CCENTER + UVXP",
+    "start": "2025-03-03",
+    "end": "2025-03-06",
+    "percentComplete": 0,
+    "dependencies": "Fase9"
+  },
+  {
+    "id": "Fase12",
+    "name": "Implantação e Go-Live",
+    "resource": "Todos",
+    "start": "2025-03-07",
+    "end": "2025-03-08",
+    "percentComplete": 0,
+    "dependencies": "Fase10"
+  },
+  {
+    "id": "Fase13",
+    "name": "Acompanhamento e Monitoramento",
+    "resource": "CCENTER + UVXP + GEINF + GESIS",
+    "start": "2025-03-09",
+    "end": "2025-05-08",
+    "percentComplete": 0,
+    "dependencies": "Fase12"
+  },
+  {
+    "id": "Fase13.1",
+    "name": "Acompanhamento e suporte de negócio",
+    "resource": "CCENTER",
+    "start": "2024-08-01",
+    "end": "2025-05-23",
+    "percentComplete": 0,
+    "dependencies": null
+  },
+  {
+    "id": "Fase13.2",
+    "name": "Acompanhamento e suporte técnico",
+    "resource": "UVXP",
+    "start": "2024-08-01",
+    "end": "2025-05-23",
+    "percentComplete": 0,
+    "dependencies": null
+  }
+]
