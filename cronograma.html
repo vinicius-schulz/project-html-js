@@ -161,10 +161,10 @@
           <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
           <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
           <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
-          <td><input type="number" value="${daysTotal}" onblur="updateTask(${index}, 'duration', this.value)" /></td> <!-- Agora editável -->
+          <td><input type="text" value="${daysTotal}" onblur="updateTask(${index}, 'duration', this.value)" /></td> <!-- Agora editável -->
           <td>${daysToStart}</td> <!-- Nova coluna "Dias para início", em branco se <= 0 -->
           <td>${percentCronograma.toFixed(2)}%</td> <!-- Percentual de cronograma calculado -->
-          <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
+          <td><input type="text" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
           <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
           <td>
             <button onclick="deleteTask(${index})">Excluir</button>
