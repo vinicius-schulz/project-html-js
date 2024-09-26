@@ -32,8 +32,8 @@
         tasks.forEach(task => {
           const startDate = new Date(task.start);
           const endDate = new Date(task.end);
-          const daysTotal = calculateDaysBetween(task.start, task.end); // Duração total
-          const daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias passados até a data atual
+          const daysTotal = calculateBusinessDaysBetween(task.start, task.end); // Duração total em dias úteis
+          const daysPassed = calculateBusinessDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias úteis passados até a data atual
 
           // Cálculo do % Cronograma
           let percentCronograma;
@@ -51,8 +51,8 @@
             task.id,
             task.name,
             task.resource,
-            new Date(task.start),
-            new Date(task.end),
+            startDate,
+            endDate,
             null, // Deixe a duração como null para que o Gantt use as datas
             percentCronograma, // Usando o percentual de cronograma calculado
             task.dependencies ? task.dependencies : null
@@ -74,12 +74,6 @@
               stroke: '#e64a19',
               strokeWidth: 5
             }
-            //,arrow: {
-            //  angle: 100,
-            //  width: 5,
-            //  color: 'green',
-            //  radius: 0
-            //}
           }
         };
 
@@ -128,8 +122,8 @@
         const currentDate = new Date(); // Data atual
         const percentCompleteReal = task.percentCompleteReal || 0; // Valor do percentual real, padrão é 0 se não informado
 
-        let daysTotal = calculateDaysBetween(task.start, task.end); // Duração total em dias
-        let daysPassed = calculateDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias passados até a data atual
+        let daysTotal = calculateBusinessDaysBetween(task.start, task.end); // Duração total em dias úteis
+        let daysPassed = calculateBusinessDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias úteis passados até a data atual
 
         // Calcula o percentual do cronograma
         let percentCronograma;
@@ -143,7 +137,7 @@
         percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor esteja entre 0 e 100
 
         // Calcula os dias para o início da tarefa
-        let daysToStart = calculateDaysBetween(currentDate.toISOString().split('T')[0], task.start);
+        let daysToStart = calculateBusinessDaysBetween(currentDate.toISOString().split('T')[0], task.start);
         if (daysToStart <= 0) {
           daysToStart = ''; // Deixar em branco se for negativo ou zero
         }
@@ -161,23 +155,23 @@
 
         // Criação da linha da tabela com a cor condicional e a nova coluna "Dias para início"
         const row = `
-      <tr style="${rowColor}" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
-        <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
-        <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
-        <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
-        <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
-        <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
-        <td>${daysTotal}</td> <!-- Nova coluna que mostra o número de dias -->
-        <td>${daysToStart}</td> <!-- Nova coluna "Dias para início", em branco se <= 0 -->
-        <td>${percentCronograma.toFixed(2)}%</td> <!-- Percentual de cronograma calculado -->
-        <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
-        <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
-        <td>
-          <button onclick="deleteTask(${index})">Excluir</button>
-          <button onclick="adjustTask(${index})">Ajustar</button>
-        </td>
-      </tr>
-    `;
+        <tr style="${rowColor}" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
+          <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
+          <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
+          <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
+          <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
+          <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
+          <td><input type="number" value="${daysTotal}" onblur="updateTask(${index}, 'duration', this.value)" /></td> <!-- Agora editável -->
+          <td>${daysToStart}</td> <!-- Nova coluna "Dias para início", em branco se <= 0 -->
+          <td>${percentCronograma.toFixed(2)}%</td> <!-- Percentual de cronograma calculado -->
+          <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
+          <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
+          <td>
+            <button onclick="deleteTask(${index})">Excluir</button>
+            <button onclick="adjustTask(${index})">Ajustar</button>
+          </td>
+        </tr>
+      `;
         tableBody.innerHTML += row;
       });
     }
@@ -222,16 +216,28 @@
           }
         });
         tasks[index][field] = newId;
+      } else if (field === 'duration') {
+        const numDays = parseInt(value.trim(), 10);
+        if (isNaN(numDays) || numDays <= 0) {
+          alert('Por favor, insira um número válido de dias.');
+          return;
+        }
+        // Atualiza a duração
+        const startDate = new Date(tasks[index].start);
+        const newEndDate = addBusinessDays(startDate, numDays - 1); // Subtrai 1 porque o dia inicial é incluído
+        tasks[index].end = newEndDate.toISOString().split('T')[0];
+        renderTable();
+        updateChart();
+        // Ajusta as tarefas dependentes
+        adjustDependentTasks(index);
       } else if (field === 'percentCompleteReal') {
-        // Verificar se o valor inserido no percentual completo real é válido
         const numValue = Number(value.trim());
         if (isNaN(numValue) || numValue < 0 || numValue > 100) {
           alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
           return;
         }
-        tasks[index][field] = numValue;  // Converte o valor para número
+        tasks[index][field] = numValue; // Converte o valor para número
       } else {
-        // Atualiza qualquer outro campo
         tasks[index][field] = value.trim();
       }
 
@@ -250,7 +256,6 @@
       downloadAnchorNode.remove();
     }
 
-    // Função para importar o JSON
     function importTasks(event) {
       const file = event.target.files[0];
       if (!file) return; // Se nenhum arquivo foi selecionado, não faz nada
@@ -308,12 +313,12 @@
         const newStart = new Date(newDate);
         const diff = newStart - oldStart; // Diferença em milissegundos
         tasks[index].start = newStart.toISOString().split('T')[0];
-        const oldEnd = new Date(tasks[index].end);
-        const newEnd = new Date(oldEnd.getTime() + diff); // Ajusta a data de fim
+        const duration = calculateBusinessDaysBetween(tasks[index].start, tasks[index].end);
+        const newEnd = addBusinessDays(newStart, duration - 1);
         tasks[index].end = newEnd.toISOString().split('T')[0];
 
         // Recalcular datas das tarefas dependentes
-        adjustDependencies(index, diff);
+        adjustDependentTasks(index);
 
         renderTable();
         updateChart();
@@ -321,32 +326,57 @@
     }
 
     // Função para ajustar as datas de tarefas dependentes
-    function adjustDependencies(taskIndex, diff) {
+    function adjustDependentTasks(taskIndex) {
       const task = tasks[taskIndex];
+      const taskEndDate = new Date(task.end);
+
       tasks.forEach((dependentTask, index) => {
         if (dependentTask.dependencies) {
           const dependencies = dependentTask.dependencies.split(',').map(dep => dep.trim());
           if (dependencies.includes(task.id)) {
-            const start = new Date(dependentTask.start);
-            const end = new Date(dependentTask.end);
+            const originalDuration = calculateBusinessDaysBetween(dependentTask.start, dependentTask.end);
+            const newStartDate = addBusinessDays(taskEndDate, 1); // Começa um dia útil após a data de fim da tarefa atual
+            const newEndDate = addBusinessDays(newStartDate, originalDuration - 1);
+            dependentTask.start = newStartDate.toISOString().split('T')[0];
+            dependentTask.end = newEndDate.toISOString().split('T')[0];
 
-            // Ajusta as datas de início e fim
-            dependentTask.start = new Date(start.getTime() + diff).toISOString().split('T')[0];
-            dependentTask.end = new Date(end.getTime() + diff).toISOString().split('T')[0];
-
-            // Chama recursivamente para ajustar os dependentes dessa tarefa
-            adjustDependencies(index, diff);
+            // Chama recursivamente para ajustar os dependentes desta tarefa
+            adjustDependentTasks(index);
           }
         }
       });
     }
 
-    function calculateDaysBetween(startDate, endDate) {
+    // Função para calcular dias úteis entre duas datas
+    function calculateBusinessDaysBetween(startDate, endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
-      const diffTime = end - start; // Diferença em milissegundos
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // Converte milissegundos para dias
-      return diffDays;
+      let count = 0;
+      let current = new Date(start);
+      while (current <= end) {
+        const day = current.getDay();
+        if (day !== 0 && day !== 6) {
+          // Não é domingo nem sábado
+          count++;
+        }
+        current.setDate(current.getDate() + 1);
+      }
+      return count;
+    }
+
+    // Função para adicionar dias úteis a uma data
+    function addBusinessDays(date, days) {
+      let result = new Date(date);
+      let addedDays = 0;
+      while (addedDays < days) {
+        result.setDate(result.getDate() + 1);
+        const day = result.getDay();
+        if (day !== 0 && day !== 6) {
+          // Não é domingo nem sábado
+          addedDays++;
+        }
+      }
+      return result;
     }
 
     window.onload = function () {
@@ -363,14 +393,11 @@
 
     #gantt_chart {
       height: 100vh;
-      /* O gráfico vai ocupar 100% da altura da janela */
       width: 100vw;
-      /* O gráfico vai ocupar 100% da largura da janela */
     }
 
     tr:hover {
       background-color: #f0f0f0;
-      /* Cor de fundo ao passar o mouse */
     }
 
     table input {
@@ -378,17 +405,14 @@
       border: none;
       outline: none;
       pointer-events: none;
-      /* Impede a interação enquanto o mouse está sobre a linha */
     }
 
     tr:hover input {
       pointer-events: auto;
-      /* Permite interação com os inputs ao passar o mouse */
     }
 
     table input[type="text"]::placeholder {
       color: black;
-      /* Define a cor do placeholder como preto, para que ele se destaque se necessário */
     }
 
     table input[type="date"] {
@@ -403,14 +427,11 @@
       width: 100%;
       table-layout: auto;
       border-collapse: collapse;
-      /* Remove o espaço entre as células */
     }
 
     th {
       resize: horizontal;
-      /* Permite o redimensionamento horizontal */
       overflow: hidden;
-      /* Garante que o conteúdo que exceder o tamanho da célula seja ocultado */
       padding: 8px;
     }
 
@@ -426,13 +447,9 @@
     input,
     select {
       width: 100%;
-      /* Faz com que o input ocupe 100% do espaço da célula */
       box-sizing: border-box;
-      /* Garante que o padding seja incluído no tamanho total do input */
       background-color: transparent;
-      /* Define o fundo transparente */
       border: none;
-      /* Remove a borda dos inputs */
     }
 
     tr[draggable="true"] {
