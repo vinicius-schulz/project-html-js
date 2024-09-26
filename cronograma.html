@@ -6,383 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cronograma do Projeto Google CCAI Platform</title>
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-  <script type="text/javascript">
-    let tasks = [];
-
-    google.charts.load('current', {
-      'packages': ['gantt'],
-      'language': 'pt-BR'
-    });
-    google.charts.setOnLoadCallback(drawChart);
-
-    function drawChart() {
-      if (tasks && tasks.length > 0) {
-        var data = new google.visualization.DataTable();
-        data.addColumn('string', 'Id da tarefa');
-        data.addColumn('string', 'Nome da tarefa');
-        data.addColumn('string', 'Recurso');
-        data.addColumn('date', 'Data de Início');
-        data.addColumn('date', 'Data Fim');
-        data.addColumn('number', 'Duração');
-        data.addColumn('number', 'Percentual completo');
-        data.addColumn('string', 'Dependencias');
-
-        const currentDate = new Date(); // Data atual
-
-        tasks.forEach(task => {
-          const startDate = new Date(task.start);
-          const endDate = new Date(task.end);
-          const daysTotal = calculateBusinessDaysBetween(task.start, task.end); // Duração total em dias úteis
-          const daysPassed = calculateBusinessDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias úteis passados até a data atual
-
-          // Cálculo do % Cronograma
-          let percentCronograma;
-          if (currentDate < startDate) {
-            percentCronograma = 0; // A tarefa ainda não começou
-          } else if (currentDate > endDate) {
-            percentCronograma = 100; // A tarefa já terminou
-          } else {
-            percentCronograma = (daysPassed / daysTotal) * 100; // A tarefa está em andamento
-          }
-          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor fique entre 0 e 100
-
-          // Adiciona a linha ao gráfico
-          data.addRow([
-            task.id,
-            task.name,
-            task.resource,
-            startDate,
-            endDate,
-            null, // Deixe a duração como null para que o Gantt use as datas
-            percentCronograma, // Usando o percentual de cronograma calculado
-            task.dependencies ? task.dependencies : null
-          ]);
-        });
-
-        // Configurações do gráfico
-        var container = document.getElementById('gantt_chart');
-        var containerHeight = container.offsetHeight || window.innerHeight;
-        var containerWidth = container.offsetWidth || window.innerWidth;
-
-        var options = {
-          height: containerHeight,
-          width: containerWidth,
-          gantt: {
-            trackHeight: 30,
-            criticalPathEnabled: true,
-            criticalPathStyle: {
-              stroke: '#e64a19',
-              strokeWidth: 5
-            }
-          }
-        };
-
-        var chart = new google.visualization.Gantt(container);
-        chart.draw(data, options);
-      }
-    }
-
-    function updateChart() {
-      drawChart();
-    }
-
-    function addTask() {
-      tasks.push({ id: '', name: '', resource: '', start: '', end: '', percentComplete: 0, dependencies: '' });
-      renderTable();
-      updateChart();
-    }
-
-    // Função para remover uma tarefa e ajustar as dependências
-    function deleteTask(index) {
-      const taskId = tasks[index].id;
-
-      // Remove a tarefa
-      tasks.splice(index, 1);
-
-      // Remove referências à tarefa excluída nas dependências das outras tarefas
-      tasks.forEach(task => {
-        if (task.dependencies) {
-          const dependencies = task.dependencies.split(',').map(dep => dep.trim());
-          const updatedDependencies = dependencies.filter(dep => dep !== taskId);
-          task.dependencies = updatedDependencies.join(',');
-        }
-      });
-
-      renderTable();
-      updateChart();
-    }
-
-    function renderTable() {
-      const tableBody = document.getElementById('task_table_body');
-      tableBody.innerHTML = ''; // Limpa a tabela
-
-      tasks.forEach((task, index) => {
-        const startDate = new Date(task.start);
-        const endDate = new Date(task.end);
-        const currentDate = new Date(); // Data atual
-        const percentCompleteReal = task.percentCompleteReal || 0; // Valor do percentual real, padrão é 0 se não informado
-
-        let daysTotal = calculateBusinessDaysBetween(task.start, task.end); // Duração total em dias úteis
-        let daysPassed = calculateBusinessDaysBetween(task.start, currentDate.toISOString().split('T')[0]); // Dias úteis passados até a data atual
-
-        // Calcula o percentual do cronograma
-        let percentCronograma;
-        if (currentDate < startDate) {
-          percentCronograma = 0; // A tarefa ainda não começou
-        } else if (currentDate > endDate) {
-          percentCronograma = 100; // A tarefa já terminou
-        } else {
-          percentCronograma = (daysPassed / daysTotal) * 100; // A tarefa está em andamento
-        }
-        percentCronograma = Math.min(Math.max(percentCronograma, 0), 100); // Garante que o valor esteja entre 0 e 100
-
-        // Calcula os dias para o início da tarefa
-        let daysToStart = calculateBusinessDaysBetween(currentDate.toISOString().split('T')[0], task.start);
-        if (daysToStart <= 0) {
-          daysToStart = ''; // Deixar em branco se for negativo ou zero
-        }
-
-        let rowColor = ''; // Define a cor da linha
-
-        // Verifica as condições para a cor da linha
-        if (percentCompleteReal == 100) {
-          rowColor = 'background-color: lightgreen;'; // Linha verde para 100%
-        } else if (currentDate > endDate) {
-          rowColor = 'background-color: lightpink;'; // Linha rosa claro se ultrapassou a data final e não está 100%
-        } else if (currentDate.toISOString().split('T')[0] === task.end) {
-          rowColor = 'background-color: lightyellow;'; // Linha amarela se for a data final e não está 100%
-        }
-
-        // Criação da linha da tabela com a cor condicional e a nova coluna "Dias para início"
-        const row = `
-        <tr style="${rowColor}" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
-          <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
-          <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
-          <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
-          <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
-          <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
-          <td><input type="text" value="${daysTotal}" onblur="updateTask(${index}, 'duration', this.value)" /></td> <!-- Agora editável -->
-          <td>${daysToStart}</td> <!-- Nova coluna "Dias para início", em branco se <= 0 -->
-          <td>${percentCronograma.toFixed(2)}%</td> <!-- Percentual de cronograma calculado -->
-          <td><input type="text" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td> <!-- Percentual Completo Real -->
-          <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
-          <td>
-            <button onclick="deleteTask(${index})">Excluir</button>
-            <button onclick="adjustTask(${index})">Ajustar</button>
-          </td>
-        </tr>
-      `;
-        tableBody.innerHTML += row;
-      });
-    }
-
-    function updateTask(index, field, value) {
-      const oldValue = tasks[index][field]; // Valor antigo para comparação
-
-      if (field === 'dependencies') {
-        if (value.trim() === '') {
-          tasks[index][field] = ''; // Permite deixar em branco sem alertas
-        } else {
-          const dependencies = value.split(',').map(dep => dep.trim());
-          const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
-
-          if (invalidDependencies.length > 0) {
-            alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
-            // Restaurar o campo para o valor antigo
-            tasks[index][field] = oldValue;
-            renderTable();
-            return;
-          } else {
-            tasks[index][field] = dependencies.join(','); // Atualiza as dependências
-          }
-        }
-      } else if (field === 'id') {
-        const newId = value.trim();
-        if (newId === '') {
-          alert('O ID da tarefa não pode ser vazio.');
-          return;
-        }
-        // Verifica se o novo ID já está em uso por outra tarefa
-        if (tasks.some((task, idx) => idx !== index && task.id === newId)) {
-          alert('Este ID já está em uso por outra tarefa.');
-          return;
-        }
-        // Atualiza as dependências das outras tarefas
-        tasks.forEach(task => {
-          if (task.dependencies) {
-            const dependencies = task.dependencies.split(',').map(dep => dep.trim());
-            const updatedDependencies = dependencies.map(dep => dep === oldValue ? newId : dep);
-            task.dependencies = updatedDependencies.join(',');
-          }
-        });
-        tasks[index][field] = newId;
-      } else if (field === 'duration') {
-        const numDays = parseInt(value.trim(), 10);
-        if (isNaN(numDays) || numDays <= 0) {
-          alert('Por favor, insira um número válido de dias.');
-          return;
-        }
-        // Atualiza a duração
-        const startDate = new Date(tasks[index].start);
-        const newEndDate = addBusinessDays(startDate, numDays - 1); // Subtrai 1 porque o dia inicial é incluído
-        tasks[index].end = newEndDate.toISOString().split('T')[0];
-        renderTable();
-        updateChart();
-        // Ajusta as tarefas dependentes
-        adjustDependentTasks(index);
-      } else if (field === 'percentCompleteReal') {
-        const numValue = Number(value.trim());
-        if (isNaN(numValue) || numValue < 0 || numValue > 100) {
-          alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
-          return;
-        }
-        tasks[index][field] = numValue; // Converte o valor para número
-      } else {
-        tasks[index][field] = value.trim();
-      }
-
-      // Atualiza o gráfico e a tabela
-      renderTable();
-      updateChart();
-    }
-
-    function exportTasks() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "tasks.json");
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-    }
-
-    function importTasks(event) {
-      const file = event.target.files[0];
-      if (!file) return; // Se nenhum arquivo foi selecionado, não faz nada
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        try {
-          const importedTasks = JSON.parse(e.target.result);
-
-          // Verifica se o arquivo contém uma lista de tarefas válida
-          if (Array.isArray(importedTasks)) {
-            tasks = importedTasks; // Sobrescreve a lista de tarefas com o novo arquivo
-            renderTable(); // Re-renderiza a tabela com as novas tarefas
-            updateChart(); // Atualiza o gráfico com as novas tarefas
-          } else {
-            alert('O arquivo não contém uma lista válida de tarefas.');
-          }
-        } catch (error) {
-          alert('Erro ao ler o arquivo. Verifique o formato do arquivo e tente novamente.');
-        }
-      };
-      reader.readAsText(file);
-
-      // Reseta o campo de arquivo após o carregamento
-      event.target.value = ''; // Isso permite que o mesmo arquivo seja carregado novamente se necessário
-    }
-
-    let draggedTaskIndex = null;
-
-    function dragStart(event, index) {
-      draggedTaskIndex = index;
-    }
-
-    function dragOver(event) {
-      event.preventDefault();
-    }
-
-    function drop(event, dropIndex) {
-      event.preventDefault();
-      if (draggedTaskIndex !== null) {
-        const draggedTask = tasks[draggedTaskIndex];
-        tasks.splice(draggedTaskIndex, 1);
-        tasks.splice(dropIndex, 0, draggedTask);
-        draggedTaskIndex = null;
-        renderTable();
-        updateChart();
-      }
-    }
-
-    // Função para ajustar a data de uma tarefa
-    function adjustTask(index) {
-      const newDate = prompt('Digite a nova data de início (formato YYYY-MM-DD):');
-      if (newDate) {
-        const oldStart = new Date(tasks[index].start);
-        const newStart = new Date(newDate);
-        const diff = newStart - oldStart; // Diferença em milissegundos
-        tasks[index].start = newStart.toISOString().split('T')[0];
-        const duration = calculateBusinessDaysBetween(tasks[index].start, tasks[index].end);
-        const newEnd = addBusinessDays(newStart, duration - 1);
-        tasks[index].end = newEnd.toISOString().split('T')[0];
-
-        // Recalcular datas das tarefas dependentes
-        adjustDependentTasks(index);
-
-        renderTable();
-        updateChart();
-      }
-    }
-
-    // Função para ajustar as datas de tarefas dependentes
-    function adjustDependentTasks(taskIndex) {
-      const task = tasks[taskIndex];
-      const taskEndDate = new Date(task.end);
-
-      tasks.forEach((dependentTask, index) => {
-        if (dependentTask.dependencies) {
-          const dependencies = dependentTask.dependencies.split(',').map(dep => dep.trim());
-          if (dependencies.includes(task.id)) {
-            const originalDuration = calculateBusinessDaysBetween(dependentTask.start, dependentTask.end);
-            const newStartDate = addBusinessDays(taskEndDate, 1); // Começa um dia útil após a data de fim da tarefa atual
-            const newEndDate = addBusinessDays(newStartDate, originalDuration - 1);
-            dependentTask.start = newStartDate.toISOString().split('T')[0];
-            dependentTask.end = newEndDate.toISOString().split('T')[0];
-
-            // Chama recursivamente para ajustar os dependentes desta tarefa
-            adjustDependentTasks(index);
-          }
-        }
-      });
-    }
-
-    // Função para calcular dias úteis entre duas datas
-    function calculateBusinessDaysBetween(startDate, endDate) {
-      const start = new Date(startDate);
-      const end = new Date(endDate);
-      let count = 0;
-      let current = new Date(start);
-      while (current <= end) {
-        const day = current.getDay();
-        if (day !== 0 && day !== 6) {
-          // Não é domingo nem sábado
-          count++;
-        }
-        current.setDate(current.getDate() + 1);
-      }
-      return count;
-    }
-
-    // Função para adicionar dias úteis a uma data
-    function addBusinessDays(date, days) {
-      let result = new Date(date);
-      let addedDays = 0;
-      while (addedDays < days) {
-        result.setDate(result.getDate() + 1);
-        const day = result.getDay();
-        if (day !== 0 && day !== 6) {
-          // Não é domingo nem sábado
-          addedDays++;
-        }
-      }
-      return result;
-    }
-
-    window.onload = function () {
-      renderTable();
-    }
-  </script>
   <style>
     html,
     body {
@@ -455,6 +78,42 @@
     tr[draggable="true"] {
       cursor: move;
     }
+
+    /* Estilos para o modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      padding-top: 60px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 50%;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+    }
   </style>
 </head>
 
@@ -485,6 +144,511 @@
 
   <h1>Cronograma</h1>
   <div id="gantt_chart" style="height: 100%; width: 100%;"></div>
+
+  <!-- Modal para editar tarefa -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Editar Tarefa</h2>
+      <div id="modalContent"></div>
+      <button onclick="confirmModal()">Confirmar</button>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    let tasks = [];
+    let selectedTaskIndex = null;
+    let modalTaskCopy = null; // Cópia da tarefa para edição no modal
+
+    google.charts.load('current', {
+      'packages': ['gantt'],
+      'language': 'pt-BR'
+    });
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+      if (tasks && tasks.length > 0) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Id da tarefa');
+        data.addColumn('string', 'Nome da tarefa');
+        data.addColumn('string', 'Recurso');
+        data.addColumn('date', 'Data de Início');
+        data.addColumn('date', 'Data Fim');
+        data.addColumn('number', 'Duração');
+        data.addColumn('number', 'Percentual completo');
+        data.addColumn('string', 'Dependencias');
+
+        const currentDate = new Date();
+
+        tasks.forEach(task => {
+          const startDate = new Date(task.start);
+          const endDate = new Date(task.end);
+          const daysTotal = calculateBusinessDaysBetween(task.start, task.end);
+          const daysPassed = calculateBusinessDaysBetween(task.start, currentDate.toISOString().split('T')[0]);
+
+          let percentCronograma;
+          if (currentDate < startDate) {
+            percentCronograma = 0;
+          } else if (currentDate > endDate) {
+            percentCronograma = 100;
+          } else {
+            percentCronograma = (daysPassed / daysTotal) * 100;
+          }
+          percentCronograma = Math.min(Math.max(percentCronograma, 0), 100);
+
+          data.addRow([
+            task.id,
+            task.name,
+            task.resource,
+            startDate,
+            endDate,
+            null,
+            percentCronograma,
+            task.dependencies ? task.dependencies : null
+          ]);
+        });
+
+        var container = document.getElementById('gantt_chart');
+        var containerHeight = container.offsetHeight || window.innerHeight;
+        var containerWidth = container.offsetWidth || window.innerWidth;
+
+        var options = {
+          height: containerHeight,
+          width: containerWidth,
+          gantt: {
+            trackHeight: 30,
+            criticalPathEnabled: true,
+            criticalPathStyle: {
+              stroke: '#e64a19',
+              strokeWidth: 5
+            }
+          }
+        };
+
+        var chart = new google.visualization.Gantt(container);
+
+        // Adicionando evento de seleção
+        google.visualization.events.addListener(chart, 'select', function () {
+          var selection = chart.getSelection();
+          if (selection.length > 0) {
+            var row = selection[0].row;
+            var taskId = data.getValue(row, 0);
+            var index = tasks.findIndex(t => t.id === taskId);
+            if (index !== -1) {
+              selectedTaskIndex = index;
+              openModal(index);
+            }
+          }
+        });
+
+        chart.draw(data, options);
+      }
+    }
+
+    function updateChart() {
+      drawChart();
+    }
+
+    function addTask() {
+      tasks.push({ id: '', name: '', resource: '', start: '', end: '', percentComplete: 0, dependencies: '' });
+      renderTable();
+      updateChart();
+    }
+
+    function deleteTask(index) {
+      const taskId = tasks[index].id;
+
+      // Lista as dependências desta tarefa
+      const dependencies = tasks[index].dependencies;
+
+      // Exibe um alerta com as dependências
+      if (!confirm(`Tem certeza de que deseja excluir a tarefa "${taskId}"?\nDependências: ${dependencies}`)) {
+        return;
+      }
+
+      // Remove a tarefa
+      tasks.splice(index, 1);
+
+      // Remove referências à tarefa excluída nas dependências das outras tarefas
+      tasks.forEach(task => {
+        if (task.dependencies) {
+          const dependenciesArray = task.dependencies.split(',').map(dep => dep.trim());
+          const updatedDependencies = dependenciesArray.filter(dep => dep !== taskId);
+          task.dependencies = updatedDependencies.join(',');
+        }
+      });
+
+      renderTable();
+      updateChart();
+    }
+
+    function renderTable() {
+      const tableBody = document.getElementById('task_table_body');
+      tableBody.innerHTML = '';
+
+      tasks.forEach((task, index) => {
+        const startDate = new Date(task.start);
+        const endDate = new Date(task.end);
+        const currentDate = new Date();
+        const percentCompleteReal = task.percentCompleteReal || 0;
+
+        let daysTotal = calculateBusinessDaysBetween(task.start, task.end);
+        let daysPassed = calculateBusinessDaysBetween(task.start, currentDate.toISOString().split('T')[0]);
+
+        let percentCronograma;
+        if (currentDate < startDate) {
+          percentCronograma = 0;
+        } else if (currentDate > endDate) {
+          percentCronograma = 100;
+        } else {
+          percentCronograma = (daysPassed / daysTotal) * 100;
+        }
+        percentCronograma = Math.min(Math.max(percentCronograma, 0), 100);
+
+        let daysToStart = calculateBusinessDaysBetween(currentDate.toISOString().split('T')[0], task.start);
+        if (daysToStart <= 0) {
+          daysToStart = '';
+        }
+
+        let rowColor = '';
+        if (percentCompleteReal == 100) {
+          rowColor = 'background-color: lightgreen;';
+        } else if (currentDate > endDate) {
+          rowColor = 'background-color: lightpink;';
+        } else if (currentDate.toISOString().split('T')[0] === task.end) {
+          rowColor = 'background-color: lightyellow;';
+        }
+
+        // Criação da linha da tabela
+        const row = `
+          <tr style="${rowColor}" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
+            <td><input type="text" value="${task.id}" onblur="updateTask(${index}, 'id', this.value)" /></td>
+            <td><input type="text" value="${task.name}" onblur="updateTask(${index}, 'name', this.value)" /></td>
+            <td><input type="text" value="${task.resource}" onblur="updateTask(${index}, 'resource', this.value)" /></td>
+            <td><input type="date" value="${task.start}" onblur="updateTask(${index}, 'start', this.value)" /></td>
+            <td><input type="date" value="${task.end}" onblur="updateTask(${index}, 'end', this.value)" /></td>
+            <td><input type="number" value="${daysTotal}" onblur="updateTask(${index}, 'duration', this.value)" /></td>
+            <td>${daysToStart}</td>
+            <td>${percentCronograma.toFixed(2)}%</td>
+            <td><input type="number" value="${percentCompleteReal}" onblur="updateTask(${index}, 'percentCompleteReal', this.value)" /></td>
+            <td><input type="text" value="${task.dependencies || ''}" onblur="updateTask(${index}, 'dependencies', this.value)" /></td>
+            <td>
+              <button onclick="deleteTask(${index})">Excluir</button>
+              <button onclick="adjustTask(${index})">Ajustar</button>
+            </td>
+          </tr>
+        `;
+        tableBody.innerHTML += row;
+      });
+    }
+
+    function updateTask(index, field, value) {
+      const oldValue = tasks[index][field];
+
+      if (field === 'dependencies') {
+        if (value.trim() === '') {
+          tasks[index][field] = '';
+        } else {
+          const dependencies = value.split(',').map(dep => dep.trim());
+          const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
+
+          if (invalidDependencies.length > 0) {
+            alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
+            tasks[index][field] = oldValue;
+            renderTable();
+            return;
+          } else {
+            tasks[index][field] = dependencies.join(',');
+          }
+        }
+      } else if (field === 'id') {
+        const newId = value.trim();
+        if (newId === '') {
+          alert('O ID da tarefa não pode ser vazio.');
+          return;
+        }
+        if (tasks.some((task, idx) => idx !== index && task.id === newId)) {
+          alert('Este ID já está em uso por outra tarefa.');
+          return;
+        }
+        tasks.forEach(task => {
+          if (task.dependencies) {
+            const dependencies = task.dependencies.split(',').map(dep => dep.trim());
+            const updatedDependencies = dependencies.map(dep => dep === oldValue ? newId : dep);
+            task.dependencies = updatedDependencies.join(',');
+          }
+        });
+        tasks[index][field] = newId;
+      } else if (field === 'duration') {
+        const numDays = parseInt(value.trim(), 10);
+        if (isNaN(numDays) || numDays <= 0) {
+          alert('Por favor, insira um número válido de dias.');
+          return;
+        }
+        const startDate = new Date(tasks[index].start);
+        const newEndDate = addBusinessDays(startDate, numDays - 1);
+        tasks[index].end = newEndDate.toISOString().split('T')[0];
+        renderTable();
+        updateChart();
+        adjustDependentTasks(index);
+      } else if (field === 'percentCompleteReal') {
+        const numValue = Number(value.trim());
+        if (isNaN(numValue) || numValue < 0 || numValue > 100) {
+          alert('Por favor, insira um número válido entre 0 e 100 para o percentual completo real.');
+          return;
+        }
+        tasks[index][field] = numValue;
+      } else {
+        tasks[index][field] = value.trim();
+      }
+
+      renderTable();
+      updateChart();
+    }
+
+    function exportTasks() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(tasks, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "tasks.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+    }
+
+    function importTasks(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          const importedTasks = JSON.parse(e.target.result);
+          if (Array.isArray(importedTasks)) {
+            tasks = importedTasks;
+            renderTable();
+            updateChart();
+          } else {
+            alert('O arquivo não contém uma lista válida de tarefas.');
+          }
+        } catch (error) {
+          alert('Erro ao ler o arquivo. Verifique o formato do arquivo e tente novamente.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    let draggedTaskIndex = null;
+
+    function dragStart(event, index) {
+      draggedTaskIndex = index;
+    }
+
+    function dragOver(event) {
+      event.preventDefault();
+    }
+
+    function drop(event, dropIndex) {
+      event.preventDefault();
+      if (draggedTaskIndex !== null) {
+        const draggedTask = tasks[draggedTaskIndex];
+        tasks.splice(draggedTaskIndex, 1);
+        tasks.splice(dropIndex, 0, draggedTask);
+        draggedTaskIndex = null;
+        renderTable();
+        updateChart();
+      }
+    }
+
+    function adjustTask(index) {
+      const newDate = prompt('Digite a nova data de início (formato YYYY-MM-DD):');
+      if (newDate) {
+        const oldStart = new Date(tasks[index].start);
+        const newStart = new Date(newDate);
+        tasks[index].start = newStart.toISOString().split('T')[0];
+        const duration = calculateBusinessDaysBetween(tasks[index].start, tasks[index].end);
+        const newEnd = addBusinessDays(newStart, duration - 1);
+        tasks[index].end = newEnd.toISOString().split('T')[0];
+
+        adjustDependentTasks(index);
+
+        renderTable();
+        updateChart();
+      }
+    }
+
+    function adjustDependentTasks(taskIndex) {
+      const task = tasks[taskIndex];
+      const taskEndDate = new Date(task.end);
+
+      tasks.forEach((dependentTask, index) => {
+        if (dependentTask.dependencies) {
+          const dependencies = dependentTask.dependencies.split(',').map(dep => dep.trim());
+          if (dependencies.includes(task.id)) {
+            const originalDuration = calculateBusinessDaysBetween(dependentTask.start, dependentTask.end);
+            const newStartDate = addBusinessDays(taskEndDate, 1);
+            const newEndDate = addBusinessDays(newStartDate, originalDuration - 1);
+            dependentTask.start = newStartDate.toISOString().split('T')[0];
+            dependentTask.end = newEndDate.toISOString().split('T')[0];
+
+            adjustDependentTasks(index);
+          }
+        }
+      });
+    }
+
+    function calculateBusinessDaysBetween(startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      let count = 0;
+      let current = new Date(start);
+      while (current <= end) {
+        const day = current.getDay();
+        if (day !== 0 && day !== 6) {
+          count++;
+        }
+        current.setDate(current.getDate() + 1);
+      }
+      return count;
+    }
+
+    function addBusinessDays(date, days) {
+      let result = new Date(date);
+      let addedDays = 0;
+      while (addedDays < days) {
+        result.setDate(result.getDate() + 1);
+        const day = result.getDay();
+        if (day !== 0 && day !== 6) {
+          addedDays++;
+        }
+      }
+      return result;
+    }
+
+    // Funções para o modal
+    function openModal(index) {
+      const modal = document.getElementById('taskModal');
+      const modalContent = document.getElementById('modalContent');
+      const task = tasks[index];
+
+      // Cria uma cópia da tarefa para edição
+      modalTaskCopy = { ...task };
+
+      modalContent.innerHTML = `
+        <label>ID da Tarefa:</label><br>
+        <input type="text" id="modal-id" value="${modalTaskCopy.id}" /><br><br>
+        <label>Nome da Tarefa:</label><br>
+        <input type="text" id="modal-name" value="${modalTaskCopy.name}" /><br><br>
+        <label>Recurso:</label><br>
+        <input type="text" id="modal-resource" value="${modalTaskCopy.resource}" /><br><br>
+        <label>Data de Início:</label><br>
+        <input type="date" id="modal-start" value="${modalTaskCopy.start}" /><br><br>
+        <label>Data Fim:</label><br>
+        <input type="date" id="modal-end" value="${modalTaskCopy.end}" /><br><br>
+        <label>Duração (dias úteis):</label><br>
+        <input type="number" id="modal-duration" value="${calculateBusinessDaysBetween(modalTaskCopy.start, modalTaskCopy.end)}" /><br><br>
+        <label>Percentual Completo Real:</label><br>
+        <input type="number" id="modal-percent" value="${modalTaskCopy.percentCompleteReal || 0}" /><br><br>
+        <label>Dependências (separadas por vírgula):</label><br>
+        <input type="text" id="modal-dependencies" value="${modalTaskCopy.dependencies || ''}" /><br><br>
+      `;
+
+      modal.style.display = 'block';
+
+      // Adiciona o listener para a tecla Esc
+      window.addEventListener('keydown', escFunction);
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('taskModal');
+      modal.style.display = 'none';
+      selectedTaskIndex = null;
+      modalTaskCopy = null;
+      window.removeEventListener('keydown', escFunction);
+    }
+
+    function escFunction(event) {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    }
+
+    window.onclick = function (event) {
+      const modal = document.getElementById('taskModal');
+      if (event.target == modal) {
+        closeModal();
+      }
+    }
+
+    function confirmModal() {
+      if (selectedTaskIndex !== null && modalTaskCopy) {
+        const index = selectedTaskIndex;
+        const oldId = tasks[index].id;
+        const newId = document.getElementById('modal-id').value.trim();
+
+        // Validações
+        if (newId === '') {
+          alert('O ID da tarefa não pode ser vazio.');
+          return;
+        }
+        if (tasks.some((task, idx) => idx !== index && task.id === newId)) {
+          alert('Este ID já está em uso por outra tarefa.');
+          return;
+        }
+
+        // Atualiza o ID nas dependências de outras tarefas
+        tasks.forEach(task => {
+          if (task.dependencies) {
+            const dependencies = task.dependencies.split(',').map(dep => dep.trim());
+            const updatedDependencies = dependencies.map(dep => dep === oldId ? newId : dep);
+            task.dependencies = updatedDependencies.join(',');
+          }
+        });
+
+        // Atualiza a tarefa
+        tasks[index].id = newId;
+        tasks[index].name = document.getElementById('modal-name').value.trim();
+        tasks[index].resource = document.getElementById('modal-resource').value.trim();
+        tasks[index].start = document.getElementById('modal-start').value;
+        tasks[index].end = document.getElementById('modal-end').value;
+        tasks[index].percentCompleteReal = Number(document.getElementById('modal-percent').value);
+
+        // Atualiza a duração
+        const numDays = parseInt(document.getElementById('modal-duration').value.trim(), 10);
+        if (!isNaN(numDays) && numDays > 0) {
+          const startDate = new Date(tasks[index].start);
+          const newEndDate = addBusinessDays(startDate, numDays - 1);
+          tasks[index].end = newEndDate.toISOString().split('T')[0];
+        }
+
+        // Atualiza as dependências
+        const dependenciesValue = document.getElementById('modal-dependencies').value.trim();
+        if (dependenciesValue === '') {
+          tasks[index].dependencies = '';
+        } else {
+          const dependencies = dependenciesValue.split(',').map(dep => dep.trim());
+          const invalidDependencies = dependencies.filter(dep => !tasks.some(task => task.id === dep));
+          if (invalidDependencies.length > 0) {
+            alert(`As seguintes dependências são inválidas: ${invalidDependencies.join(', ')}`);
+            return;
+          }
+          tasks[index].dependencies = dependencies.join(',');
+        }
+
+        // Recalcular datas das tarefas dependentes
+        adjustDependentTasks(index);
+
+        renderTable();
+        updateChart();
+        closeModal();
+      }
+    }
+
+    window.onload = function () {
+      renderTable();
+    }
+  </script>
 </body>
 
 </html>
