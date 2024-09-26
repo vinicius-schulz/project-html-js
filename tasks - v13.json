@@ -82,7 +82,8 @@
     "start": "2024-09-10",
     "end": "2024-10-03",
     "percentComplete": 100,
-    "dependencies": null
+    "dependencies": null,
+    "percentCompleteReal": 100
   },
   {
     "id": "Fase6",
@@ -160,7 +161,7 @@
     "id": "Fase13.1",
     "name": "Acompanhamento e suporte de negócio",
     "resource": "CCENTER",
-    "start": "2024-08-01",
+    "start": "2024-08-12",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": "",
@@ -170,7 +171,7 @@
     "id": "Fase13.2",
     "name": "Acompanhamento e suporte técnico",
     "resource": "UVXP",
-    "start": "2024-08-01",
+    "start": "2024-08-12",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": null

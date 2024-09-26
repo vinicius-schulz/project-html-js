@@ -160,7 +160,7 @@
     "id": "Fase13.1",
     "name": "Acompanhamento e suporte de negócio",
     "resource": "CCENTER",
-    "start": "2024-08-01",
+    "start": "2024-08-12",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": "",
@@ -170,7 +170,7 @@
     "id": "Fase13.2",
     "name": "Acompanhamento e suporte técnico",
     "resource": "UVXP",
-    "start": "2024-08-01",
+    "start": "2024-08-12",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": null

@@ -82,7 +82,8 @@
     "start": "2024-09-10",
     "end": "2024-10-03",
     "percentComplete": 100,
-    "dependencies": null
+    "dependencies": null,
+    "percentCompleteReal": 100
   },
   {
     "id": "Fase6",
@@ -122,7 +123,7 @@
   },
   {
     "id": "Fase9",
-    "name": "Testes Integrados",
+    "name": "Testes Integrados - SAC",
     "resource": "CCENTER + UVXP + GEINF + GESIS",
     "start": "2025-02-26",
     "end": "2025-03-02",
@@ -140,18 +141,19 @@
   },
   {
     "id": "Fase12",
-    "name": "Implantação e Go-Live",
+    "name": "Implantação e Go-Live - SAC",
     "resource": "Todos",
     "start": "2025-03-07",
     "end": "2025-03-08",
     "percentComplete": 0,
-    "dependencies": "Fase10"
+    "dependencies": "Fase10",
+    "percentCompleteReal": 0
   },
   {
     "id": "Fase13",
     "name": "Acompanhamento e Monitoramento",
     "resource": "CCENTER + UVXP + GEINF + GESIS",
-    "start": "2025-03-09",
+    "start": "2025-03-11",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": "Fase12"
@@ -160,7 +162,7 @@
     "id": "Fase13.1",
     "name": "Acompanhamento e suporte de negócio",
     "resource": "CCENTER",
-    "start": "2024-08-01",
+    "start": "2024-08-12",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": "",
@@ -170,9 +172,37 @@
     "id": "Fase13.2",
     "name": "Acompanhamento e suporte técnico",
     "resource": "UVXP",
-    "start": "2024-08-01",
+    "start": "2024-08-12",
     "end": "2025-05-08",
     "percentComplete": 0,
     "dependencies": null
+  },
+  {
+    "id": "Fase9.1",
+    "name": "Testes Integrados - PAs Internas",
+    "resource": "CCENTER + UVXP",
+    "start": "2024-11-20",
+    "end": "2024-11-22",
+    "percentComplete": 0,
+    "dependencies": "Fase6",
+    "percentCompleteReal": 0
+  },
+  {
+    "id": "Fase9.2",
+    "name": "Treinamento de PAs Internas",
+    "resource": "CCENTER + UVXP + VIVER + PERSONAL",
+    "start": "2024-11-27",
+    "end": "2024-11-29",
+    "percentComplete": 0,
+    "dependencies": "Fase9.1"
+  },
+  {
+    "id": "Fase9.3",
+    "name": "Go-Live PAs Internas",
+    "resource": "UVXP + GEINF + CCENTER + VIVER + PERSONAL",
+    "start": "2024-12-02",
+    "end": "2024-12-03",
+    "percentComplete": 0,
+    "dependencies": "Fase9.2"
   }
 ]
